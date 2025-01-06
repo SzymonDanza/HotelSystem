@@ -1,0 +1,22 @@
+﻿@model IEnumerable<HotelSystem.Models.Room>
+
+<h1>Lista Pokoi</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Nazwa</th>
+            <th>Pojemność</th>
+            <th>Cena za noc</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var room in Model)
+        {
+            <tr>
+                <td>@room.Name</td>
+                <td>@room.Capacity</td>
+                <td>@room.PricePerNight</td>
+            </tr>
+        }
+    </tbody>
+</table>

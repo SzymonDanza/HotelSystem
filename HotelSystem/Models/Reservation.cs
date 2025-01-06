@@ -1,4 +1,5 @@
-﻿public class Reservation
+﻿using HotelSystem.Models;
+public class Reservation
 {
     public int Id { get; set; }
     public int RoomId { get; set; } 
