@@ -15,6 +15,8 @@ namespace HotelSystem.Controllers
 
         public IActionResult Index()
         {
+            ViewData["Username"] = HttpContext.Session.GetString("Username");
+            ViewData["IsAdmin"] = HttpContext.Session.GetString("IsAdmin");
             return View();
         }
 

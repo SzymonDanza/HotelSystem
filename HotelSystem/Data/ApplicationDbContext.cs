@@ -1,23 +1,28 @@
-﻿namespace HotelSystem.Data;
+﻿using HotelSystem.Models;
+
 using Microsoft.EntityFrameworkCore;
-using HotelSystem.Models;
-using System.Collections.Generic;
 
-public class ApplicationDbContext : DbContext
+namespace HotelSystem.Data
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-
-    public DbSet<Room> Rooms { get; set; }
-    public DbSet<Reservation> Reservations { get; set; }
-    public DbSet<User> Users { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public class ApplicationDbContext : DbContext
     {
-        base.OnModelCreating(modelBuilder);
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-        modelBuilder.Entity<Room>()
-            .Property(r => r.PricePerNight)
-            .HasColumnType("decimal(18,2)");
+        public DbSet<Room> Rooms { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<User> Users { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Room>()
+                .Property(r => r.PricePerNight)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+        }
     }
-
 }

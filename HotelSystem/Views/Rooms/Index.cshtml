@@ -1,12 +1,20 @@
 ﻿@model IEnumerable<HotelSystem.Models.Room>
 
-<h1>Lista Pokoi</h1>
-<table>
+@{
+    ViewData["Title"] = "Rooms";
+}
+
+<h2>Rooms</h2>
+
+<a asp-action="Create" class="btn btn-primary">Add Room</a>
+
+<table class="table">
     <thead>
         <tr>
-            <th>Nazwa</th>
-            <th>Pojemność</th>
-            <th>Cena za noc</th>
+            <th>Name</th>
+            <th>Capacity</th>
+            <th>Price per Night</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -16,6 +24,10 @@
                 <td>@room.Name</td>
                 <td>@room.Capacity</td>
                 <td>@room.PricePerNight</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@room.Id" class="btn btn-warning">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@room.Id" class="btn btn-danger">Delete</a>
+                </td>
             </tr>
         }
     </tbody>
