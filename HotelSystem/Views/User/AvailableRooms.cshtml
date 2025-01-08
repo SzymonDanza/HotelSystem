@@ -1,0 +1,31 @@
+﻿@model IEnumerable<HotelSystem.Models.Room>
+
+<h1>Available Rooms</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Capacity</th>
+            <th>Price Per Night</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var room in Model)
+        {
+            <tr>
+                <td>@room.Name</td>
+                <td>@room.Capacity</td>
+                <td>@room.PricePerNight</td>
+                <td>
+                    <form asp-controller="User" asp-action="CreateReservation" method="post">
+                        <input type="hidden" name="roomId" value="@room.Id" />
+                        <input type="date" name="checkInDate" required />
+                        <input type="date" name="checkOutDate" required />
+                        <button type="submit" class="btn btn-primary">Reserve</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
