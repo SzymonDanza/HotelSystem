@@ -1,6 +1,17 @@
 ﻿@model IEnumerable<HotelSystem.Models.Room>
 
 <h1>Available Rooms</h1>
+
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewBag.Error
+    </div>
+}
+
+
+
 <table class="table">
     <thead>
         <tr>
@@ -20,8 +31,10 @@
                 <td>
                     <form asp-controller="User" asp-action="CreateReservation" method="post">
                         <input type="hidden" name="roomId" value="@room.Id" />
-                        <input type="date" name="checkInDate" required />
-                        <input type="date" name="checkOutDate" required />
+                        <label for="checkInDate">Check-In:</label>
+                        <input type="date" id="checkInDate" name="checkInDate" required />
+                        <label for="checkOutDate">Check-Out:</label>
+                        <input type="date" id="checkOutDate" name="checkOutDate" required />
                         <button type="submit" class="btn btn-primary">Reserve</button>
                     </form>
                 </td>

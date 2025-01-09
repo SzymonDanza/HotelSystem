@@ -37,9 +37,12 @@ public class UserController : Controller
         return View(rooms);
     }
 
-    // Tworzenie rezerwacji
+    // Tworzenie rezerwacji z walidacją dostępności pokoju
     [HttpPost]
     [ValidateAntiForgeryToken]
+
+
+
     public IActionResult CreateReservation(int roomId, DateTime checkInDate, DateTime checkOutDate)
     {
         var username = HttpContext.Session.GetString("Username");
@@ -49,11 +52,25 @@ public class UserController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        var room = _context.Rooms.FirstOrDefault(r => r.Id == roomId);
-
-        if (room == null)
+        if (roomId <= 0 || checkInDate == default || checkOutDate == default || checkInDate >= checkOutDate)
         {
-            return NotFound();
+            ViewBag.Error = "Nieprawidłowe dane rezerwacji.";
+            return RedirectToAction("AvailableRooms");
+        }
+
+        // Sprawdzenie kolidujących rezerwacji
+        var overlappingReservations = _context.Reservations
+            .Where(r => r.RoomId == roomId &&
+                        ((checkInDate >= r.CheckInDate && checkInDate < r.CheckOutDate) ||
+                         (checkOutDate > r.CheckInDate && checkOutDate <= r.CheckOutDate) ||
+                         (checkInDate <= r.CheckInDate && checkOutDate >= r.CheckOutDate)))
+            .ToList();
+
+        if (overlappingReservations.Any())
+        {
+            // Komunikat o niedostępności terminu
+            ViewBag.Error = "Wybrana data jest niedostępna. Proszę wybrać inny termin.";
+            return View("AvailableRooms", _context.Rooms.ToList());
         }
 
         var reservation = new Reservation
@@ -69,6 +86,10 @@ public class UserController : Controller
 
         return RedirectToAction("MyReservations");
     }
+
+
+
+    // Anulowanie rezerwacji
     public IActionResult CancelReservation(int reservationId)
     {
         var reservation = _context.Reservations.FirstOrDefault(r => r.Id == reservationId);
