@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Dodaj ApplicationDbContext do kontenera us³ug DI
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));  // Po³¹czenie z SQL Server
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Dodaj kontrolery i widoki
 builder.Services.AddControllersWithViews();
