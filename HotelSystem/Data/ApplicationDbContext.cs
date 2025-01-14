@@ -20,7 +20,7 @@ namespace HotelSystem.Data
 
             modelBuilder.Entity<Room>()
                 .Property(r => r.PricePerNight)
-                .HasColumnType("decimal(18,2)");
+                .HasPrecision(18,2);
 
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)
