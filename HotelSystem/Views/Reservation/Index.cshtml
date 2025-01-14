@@ -1,81 +1,55 @@
-﻿@{
+﻿@model CalendarViewModel
+
+@{
     ViewData["Title"] = "Kalendarz Rezerwacji";
 }
 
 <div class="container mt-5">
     <h1 class="text-center">@ViewData["Title"]</h1>
-    <div class="calendar text-center mt-4">
-        <div id="calendar" class="row flex-wrap justify-content-center">
-            @for (int month = 0; month < 12; month++)
-            {
-                <div class="col-12 mb-4">
-                    @{
-                        var monthName = new DateTime(2023, month + 1, 1).ToString("MMMM");
-                    }
-                    <h4>@monthName</h4>
-                    <div class="row g-2">
-                        @foreach (var day in Model.CalendarDays[month])
+    <div class="calendar mt-4">
+        @for (int month = 0; month < Model.CalendarDays.Count; month++)
+        {
+            <div class="month-container mb-4">
+                <h4 class="text-center">
+                    @System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month + 1)
+                </h4>
+                <div class="row g-2 justify-content-center">
+                    @foreach (var day in Model.CalendarDays[month])
+                    {
+                        @if (day == null)
                         {
-                            @if (day != null)
-                            {
-                                // Określenie koloru przycisku (zielony, czerwony) w zależności od dostępności
-                                var buttonClass = day.IsAvailable ? "btn-success" : "btn-danger";
-                                <div class="col-2">
-                                    <button class="btn @buttonClass w-100">
-                                        @day.Day
-                                    </button>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="col-2"></div>  <!-- Puste dni na początku miesiąca -->
-                            }
+                            <div class="col-2"></div> <!-- Puste miejsce w kalendarzu -->
                         }
-                    </div>
+                        else
+                        {
+                            <div class="col-2">
+                                <button class="btn @day.CssClass w-100">
+                                    @day.Day
+                                </button>
+                            </div>
+                        }
+                    }
                 </div>
-            }
-        </div>
+            </div>
+        }
     </div>
 </div>
 
-
-
-<script>
-    // function generateCalendar(year) {
-    //    const calendarContainer = document.getElementById('calendar');
-    //    calendarContainer.innerHTML = '';
-    //
-    //    for (let month = 0; month < 12; month++) {
-    //        const monthHeader = document.createElement('h4');
-    //        monthHeader.textContent = new Date(year, month).toLocaleString('default', { month: 'long' });
-    //        calendarContainer.appendChild(monthHeader);
-    //
-    //        const monthContainer = document.createElement('div');
-    //        monthContainer.classList.add('row', 'g-2', 'mb-4');
-    //
-    //        const daysInMonth = new Date(year, month + 1, 0).getDate();
-    //        const firstDay = new Date(year, month, 1).getDay();
-    //
-    //        for (let i = 0; i < firstDay; i++) {
-    //            const emptyCell = document.createElement('div');
-    //            emptyCell.classList.add('col-2', 'border', 'bg-light');
-    //            monthContainer.appendChild(emptyCell);
-    //        }
-    //
-    //        for (let day = 1; day <= daysInMonth; day++) {
-    //            const dayButton = document.createElement('button');
-    //            dayButton.textContent = day;
-    //            dayButton.classList.add('btn', 'btn-outline-primary', 'w-100');
-    //            dayButton.onclick = () => alert(`Wybrałeś dzień: ${day}-${month + 1}-${year}`);
-    //
-    //            const dayCell = document.createElement('div');
-    //            dayCell.classList.add('col-2', 'border');
-    //            dayCell.appendChild(dayButton);
-    //
-    //            monthContainer.appendChild(dayCell);
-    //        }
-    //
-    //        calendarContainer.appendChild(monthContainer);
-    //    }
-    // }
-</script>
+<style>
+    .calendar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .month-container {
+        width: 100%;
+    }
+    .btn-success {
+        background-color: green;
+        color: white;
+    }
+    .btn-danger {
+        background-color: red;
+        color: white;
+    }
+</style>

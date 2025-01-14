@@ -20,13 +20,13 @@ namespace HotelSystem.Controllers
             var today = DateTime.Now;
             int year = today.Year;
 
-           
+            // Pobranie dostępności pokoi na dany rok
             var roomsAvailability = DbContext.RoomAvailabilities
                                              .Where(r => r.Date.Year == year)
-                                             .Include(r => r.Room) 
+                                             .Include(r => r.Room)
                                              .ToList();
 
-            
+            // Przygotowanie modelu widoku
             var calendarViewModel = new CalendarViewModel
             {
                 Year = year,
@@ -46,26 +46,27 @@ namespace HotelSystem.Controllers
                 var daysInMonth = DateTime.DaysInMonth(year, month + 1);
                 var firstDay = new DateTime(year, month + 1, 1).DayOfWeek;
 
-                
+                // Dodaj puste dni przed pierwszym dniem miesiąca
                 for (int i = 0; i < (int)firstDay; i++)
                 {
                     monthDays.Add(null);
                 }
 
-                
+                // Dodaj dni miesiąca z informacją o dostępności
                 for (int day = 1; day <= daysInMonth; day++)
                 {
                     var date = new DateTime(year, month + 1, day);
+                    var roomAvailability = roomsAvailability.FirstOrDefault(r => r.Date == date);
+                    var isAvailable = roomAvailability != null && roomAvailability.Availability;
 
-                    
-                    var roomAvailability = roomsAvailability
-                        .Where(r => r.Date == date)
-                        .FirstOrDefault();
+                    // Debugowanie danych
+                    Console.WriteLine($"Date: {date.ToString("yyyy-MM-dd")}, Availability: {isAvailable}");
 
-                    
-                    var available = roomAvailability != null && roomAvailability.Availability;
-
-                    monthDays.Add(new { Day = day, IsAvailable = available });
+                    monthDays.Add(new
+                    {
+                        Day = day,
+                        CssClass = isAvailable ? "btn-danger" : "btn-success" // Klasa CSS dla dostępności
+                    });
                 }
 
                 calendarDays.Add(monthDays);
