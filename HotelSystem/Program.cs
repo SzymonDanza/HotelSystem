@@ -3,7 +3,12 @@ using HotelSystem.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Dodaj ApplicationDbContext do kontenera us³ug DI
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));  // Po³¹czenie z SQL Server
 
+// Dodaj kontrolery i widoki
+builder.Services.AddControllersWithViews();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

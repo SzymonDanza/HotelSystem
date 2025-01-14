@@ -1,12 +1,11 @@
-﻿namespace HotelSystem.Models
+﻿using HotelSystem.Models;
+
+public class RoomAvailability
 {
-    public class RoomAvailability
-    {
-        public int RoomId { get; set; }
-        public Room Room { get; set; }  
+    public int Id { get; set; }  // Klucz główny
+    public DateTime Date { get; set; }
+    public bool Availability { get; set; }
+    public int RoomId { get; set; }
 
-        public DateTime Date { get; set; }  
-
-        public bool Availability { get; set; }  
-    }
+    public Room Room { get; set; }
 }
