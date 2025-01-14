@@ -1,58 +1,49 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using HotelSystem.Data;
 using HotelSystem.Models;
-using System;
+using HotelSystem.Data;
 using System.Linq;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
-namespace HotelSystem.Controllers
+public class RoomController : Controller
 {
-    public class ReservationController : Controller
+    private readonly ApplicationDbContext _context;
+
+    public RoomController(ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public ReservationController(ApplicationDbContext context)
+    // Akcja wyświetlająca dostępne pokoje w formie kalendarza
+    public IActionResult Calendar()
+    {
+        var rooms = _context.Rooms.Include(r => r.Reservations).ToList();
+
+        // Załóżmy, że chcesz wyświetlić dostępność na cały miesiąc
+        var startDate = DateTime.Now;
+        var endDate = startDate.AddMonths(1);
+
+        var availableRooms = new List<RoomAvailabilityModel>();
+
+        foreach (var room in rooms)
         {
-            _context = context;
-        }
-
-        public List<dynamic> CalendarDays { get; private set; }
-
-        public IActionResult Calendar(int roomId, int year, int month)
-        {
-            // Pobierz dostępne pokoje
-            var room = _context.Rooms.Include(r => r.Reservations)
-                                      .FirstOrDefault(r => r.Id == roomId);
-            if (room == null)
+            var availability = new RoomAvailabilityModel
             {
-                return NotFound();
-            }
-
-           
-            var reservations = _context.Reservations
-                .Where(r => r.RoomId == roomId && r.StartDate.Year == year && r.StartDate.Month == month)
-                .ToList();
-
-            
-            var daysInMonth = DateTime.DaysInMonth(year, month);
-            var calendarDays = Enumerable.Range(1, daysInMonth)
-                                         .Select(day => new
-                                         {
-                                             Day = day,
-                                             IsReserved = reservations.Any(r => r.StartDate.Day <= day && r.EndDate.Day >= day)
-                                         })
-                                         .ToList();
-
-            
-            var model = new CalendarViewModel
-            {
-                RoomId = roomId,
-                Year = year,
-                Month = month,
-                CalendarDays = CalendarDays
+                RoomId = room.Id,
+                RoomName = room.Name,
+                Availability = new Dictionary<DateTime, bool>()
             };
 
-            return View(model);
+            // Generowanie dostępności dla każdego dnia w okresie
+            for (var day = startDate; day <= endDate; day = day.AddDays(1))
+            {
+                var isReserved = room.Reservations.Any(r => r.StartDate <= day && r.EndDate >= day);
+                availability.Availability[day] = !isReserved; // True jeśli dostępny, False jeśli zarezerwowany
+            }
+
+            availableRooms.Add(availability);
         }
+
+        return View(availableRooms);
     }
 }

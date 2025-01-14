@@ -1,64 +1,36 @@
-﻿@model HotelSystem.Models.CalendarViewModel
+﻿@model IEnumerable<HotelSystem.Models.RoomAvailabilityModel>
 
 @{
-    ViewData["Title"] = "Reservation Calendar";
+    var startDate = DateTime.Now;
+    var endDate = startDate.AddMonths(1);
+    var daysInMonth = Enumerable.Range(0, (endDate - startDate).Days + 1)
+                                .Select(d => startDate.AddDays(d))
+                                .ToList();
 }
 
-<h1>Kalendarz Rezerwacji - Pokój: @Model.RoomId</h1>
+<h1>Room Availability Calendar</h1>
 
-<table class="calendar">
-    <thead>
-        <tr>
-            <th>Pon</th>
-            <th>Wt</th>
-            <th>Śr</th>
-            <th>Cz</th>
-            <th>Pt</th>
-            <th>So</th>
-            <th>Nd</th>
-        </tr>
-    </thead>
-    <tbody>
-        @for (int i = 0; i < @Model.CalendarDays.Count; i++)
-        {
-            var day = @Model.CalendarDays[i];
-            var rowIndex = i / 7;
-            if (i % 7 == 0)
+@foreach (var room in Model)
+{
+    <h3>@room.RoomName</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Availability</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var day in daysInMonth)
             {
                 <tr>
-                    }
-
-                    <td class="@((day.IsReserved) ? "reserved" : "available")">
-                        @day.Day
+                    <td>@day.ToString("yyyy-MM-dd")</td>
+                    <td style="background-color: @(room.Availability[day] ? "green" : "red");">
+                        @(room.Availability[day] ? "Available" : "Reserved")
                     </td>
-
-                    if (i % 7 == 6)
-                    {
                 </tr>
             }
-        }
-    </tbody>
-</table>
-
-<style>
-    .calendar {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .calendar td, .calendar th {
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: center;
-    }
-
-    .calendar .available {
-        background-color: green;
-        color: white;
-    }
-
-    .calendar .reserved {
-        background-color: red;
-        color: white;
-    }
-</style>
+        </tbody>
+    </table>
+}
