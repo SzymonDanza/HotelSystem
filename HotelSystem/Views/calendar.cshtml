@@ -1,0 +1,64 @@
+﻿@model HotelSystem.Models.CalendarViewModel
+
+@{
+    ViewData["Title"] = "Reservation Calendar";
+}
+
+<h1>Kalendarz Rezerwacji - Pokój: @Model.RoomId</h1>
+
+<table class="calendar">
+    <thead>
+        <tr>
+            <th>Pon</th>
+            <th>Wt</th>
+            <th>Śr</th>
+            <th>Cz</th>
+            <th>Pt</th>
+            <th>So</th>
+            <th>Nd</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < @Model.CalendarDays.Count; i++)
+        {
+            var day = @Model.CalendarDays[i];
+            var rowIndex = i / 7;
+            if (i % 7 == 0)
+            {
+                <tr>
+                    }
+
+                    <td class="@((day.IsReserved) ? "reserved" : "available")">
+                        @day.Day
+                    </td>
+
+                    if (i % 7 == 6)
+                    {
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<style>
+    .calendar {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .calendar td, .calendar th {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .calendar .available {
+        background-color: green;
+        color: white;
+    }
+
+    .calendar .reserved {
+        background-color: red;
+        color: white;
+    }
+</style>
