@@ -62,7 +62,7 @@ namespace HotelSystem.Controllers
                     monthDays.Add(new
                     {
                         Day = day,
-                        CssClass = isAvailable ? "btn-danger" : "btn-success" // Klasa CSS dla dostępności
+                        CssClass = isAvailable ? "btn-success" : "btn-success" // Klasa CSS dla dostępności
                     });
                 }
 
