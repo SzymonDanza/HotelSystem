@@ -2,87 +2,182 @@
     ViewData["Title"] = "Kalendarz Rezerwacji";
 }
 
-<div class="container mt-5">
-    <h1 class="text-center">@ViewData["Title"]</h1>
-    <div class="calendar text-center mt-4">
-        <div id="calendar" class="row flex-wrap justify-content-center">
-            @for (int month = 0; month < 12; month++)
-            {
-                <div class="col-12 mb-4">
-                    @{
-                        var monthName = new DateTime(2023, month + 1, 1).ToString("MMMM");
-                    }
-                    <h4>@monthName</h4>
-                    <div class="row g-2">
-                        @foreach (var day in Model.CalendarDays[month])
-                        {
-                            @if (day != null)
-                            {
-                                // Określenie koloru przycisku (zielony, czerwony) w zależności od dostępności
-                                var buttonClass = day.CssClass;
-                                <div class="col-2">
-                                    <button class="btn @buttonClass w-100" data-bs-toggle="modal" data-bs-target="#reservationModal"
-                                            onclick="setReservationDate('@Model.Year', @month + 1, @day.Day)">
-                                        @day.Day
-                                    </button>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="col-2"></div>  <!-- Puste dni na początku miesiąca -->
-                            }
-                        }
-                    </div>
-                </div>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <!-- Umieszczamy CSS w sekcji <style> -->
+    <style>
+        /* Ogólne stylowanie przycisków w kalendarzu */
+        .btn {
+            font-size: 16px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Styl dla dostępnych dni (zielony przycisk) */
+        .available {
+            background-color: #28a745; /* Zielony */
+            color: white;
+        }
+
+            .available:hover {
+                background-color: #218838;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
             }
-        </div>
-    </div>
-</div>
 
-<!-- Modal rezerwacji -->
-<div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="reservationModalLabel">Zarezerwuj pokój</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="@Url.Action("Reserve", "Reservation")">
-                    <input type="hidden" id="selectedDate" name="selectedDate" />
-                    <input type="hidden" id="month" name="month" />
-                    <input type="hidden" id="day" name="day" />
-                    <input type="hidden" id="year" name="year" />
+        /* Styl dla niedostępnych dni (czerwony przycisk) */
+        .unavailable {
+            background-color: #dc3545; /* Czerwony */
+            color: white;
+        }
 
-                    <div class="mb-3">
-                        <label for="room" class="form-label">Pokój</label>
-                        <select class="form-select" id="room" name="roomId">
-                            @if (ViewBag.Rooms != null && ViewBag.Rooms.Any())
+            .unavailable:hover {
+                background-color: #c82333;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            }
+
+        /* Styl dla pustych dni (przyciski bez koloru) */
+        .empty {
+            background-color: transparent;
+            border: 1px solid #ddd;
+            color: #ccc;
+        }
+
+            .empty:hover {
+                background-color: transparent;
+                box-shadow: none;
+            }
+
+        /* Styl dla modalnych przycisków */
+        .modal-content {
+            padding: 20px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #ddd;
+        }
+
+        .modal-title {
+            font-size: 20px;
+        }
+
+        /* Styl dla formularza w modalu */
+        .form-select {
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+            .btn-primary:hover {
+                background-color: #0056b3;
+                border-color: #004085;
+            }
+
+        /* Style dla przycisków modalnych */
+        .btn-close {
+            background-color: transparent;
+            border: none;
+            color: #6c757d;
+        }
+
+            .btn-close:hover {
+                color: #000;
+            }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">@ViewData["Title"]</h1>
+        <div class="calendar text-center mt-4">
+            <div id="calendar" class="row flex-wrap justify-content-center">
+                @for (int month = 0; month < 12; month++)
+                {
+                    <div class="col-12 col-md-6 col-lg-4 mb-4">
+                        @{
+                            var monthName = new DateTime(2023, month + 1, 1).ToString("MMMM");
+                        }
+                        <h4>@monthName</h4>
+                        <div class="row g-2">
+                            @foreach (var day in Model.CalendarDays[month])
                             {
-                                foreach (var room in ViewBag.Rooms)
+                                @if (day != null)
                                 {
-                                    <div>@room.Name</div>
+                                    // Określenie koloru przycisku (zielony, czerwony) w zależności od dostępności
+                                    var buttonClass = day.CssClass;
+                                    <div class="col-2">
+                                        <button class="btn @buttonClass w-100" data-bs-toggle="modal" data-bs-target="#reservationModal"
+                                                onclick="setReservationDate('@Model.Year', @month + 1, @day.Day)">
+                                            @day.Day
+                                        </button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-2"></div>  <!-- Puste dni na początku miesiąca -->
                                 }
                             }
-                            else
-                            {
-                                <p>No rooms available.</p>
-                            }
-                        </select>
+                        </div>
                     </div>
-
-                    <button type="submit" class="btn btn-primary">Zarezerwuj</button>
-                </form>
+                }
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    function setReservationDate(year, month, day) {
-        document.getElementById('selectedDate').value = new Date(year, month - 1, day).toISOString().split('T')[0]; // ustawienie daty w formacie yyyy-mm-dd
-        document.getElementById('month').value = month;
-        document.getElementById('day').value = day;
-        document.getElementById('year').value = year;
-    }
-</script>
+    <!-- Modal rezerwacji -->
+    <div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reservationModalLabel">Zarezerwuj pokój</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="@Url.Action("Reserve", "Reservation")">
+                        <input type="hidden" id="selectedDate" name="selectedDate" />
+                        <input type="hidden" id="month" name="month" />
+                        <input type="hidden" id="day" name="day" />
+                        <input type="hidden" id="year" name="year" />
+
+                        <div class="mb-3">
+                            <label for="room" class="form-label">Pokój</label>
+                            <select class="form-select" id="room" name="roomId">
+                                @if (ViewBag.Rooms != null && ViewBag.Rooms.Any())
+                                {
+                                    foreach (var room in ViewBag.Rooms)
+                                    {
+                                        <option value="@room.Id">@room.Name</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option disabled>No rooms available.</option>
+                                }
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Zarezerwuj</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setReservationDate(year, month, day) {
+            document.getElementById('selectedDate').value = new Date(year, month - 1, day).toISOString().split('T')[0]; // ustawienie daty w formacie yyyy-mm-dd
+            document.getElementById('month').value = month;
+            document.getElementById('day').value = day;
+            document.getElementById('year').value = year;
+        }
+    </script>
+</body>
+</html>
