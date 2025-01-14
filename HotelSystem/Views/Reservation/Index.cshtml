@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Kalendarz Rezerwacji";
+}
+
+<div class="container mt-5">
+    <h1 class="text-center">@ViewData["Title"]</h1>
+    <div class="calendar text-center mt-4">
+        <div id="calendar" class="row flex-wrap justify-content-center">
+            <!-- Kalendarz zostanie wygenerowany dynamicznie -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Funkcja generująca kalendarz
+    function generateCalendar(year) {
+        const calendarContainer = document.getElementById('calendar');
+        calendarContainer.innerHTML = ''; // Wyczyść kalendarz
+
+        // Dla każdego miesiąca w roku
+        for (let month = 0; month < 12; month++) {
+            const monthHeader = document.createElement('h4');
+            monthHeader.textContent = new Date(year, month).toLocaleString('default', { month: 'long' });
+            calendarContainer.appendChild(monthHeader);
+
+            const monthContainer = document.createElement('div');
+            monthContainer.classList.add('row', 'g-2', 'mb-4');
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate(); // Liczba dni w miesiącu
+            const firstDay = new Date(year, month, 1).getDay(); // Dzień tygodnia (0 = niedziela)
+
+            // Dodaj puste pola dla dni przed rozpoczęciem miesiąca
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.classList.add('col-2', 'border', 'bg-light');
+                monthContainer.appendChild(emptyCell);
+            }
+
+            // Generuj przyciski dla każdego dnia
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayButton = document.createElement('button');
+                dayButton.textContent = day;
+                dayButton.classList.add('btn', 'btn-outline-primary', 'w-100');
+                dayButton.onclick = () => alert(`Wybrałeś dzień: ${day}-${month + 1}-${year}`);
+
+                const dayCell = document.createElement('div');
+                dayCell.classList.add('col-2', 'border');
+                dayCell.appendChild(dayButton);
+
+                monthContainer.appendChild(dayCell);
+            }
+
+            calendarContainer.appendChild(monthContainer);
+        }
+    }
+
+    // Ustaw datę początkową (obecny rok)
+    const today = new Date();
+    generateCalendar(today.getFullYear());
+</script>

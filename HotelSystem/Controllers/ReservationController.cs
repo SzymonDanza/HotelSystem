@@ -8,7 +8,7 @@ namespace HotelSystem.Controllers
         public IActionResult Index()
         {
             ViewData["Title"] = "Witamy w Rezerwatorze";  // Tytuł strony
-            return View();  // Zwróć widok 'Index'
+            return View("~/Views/Reservation/Index.cshtml");  // Zwróć widok 'Index'
         }
 
         // Akcja dla strony polityki prywatności
