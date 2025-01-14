@@ -19,6 +19,8 @@ using (var scope = app.Services.CreateScope())
     SeedData.Initialize(scope.ServiceProvider, dbContext);  // Wywo³anie metody inicjalizuj¹cej
 }
 
+
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -34,5 +36,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
 
 app.Run();

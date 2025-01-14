@@ -1,0 +1,14 @@
+﻿@model ReservationViewModel
+
+<h2>Rezerwacja pokoju na dzień: @Model.SelectedDate.ToShortDateString()</h2>
+
+<form method="post">
+    <label for="room">Wybierz pokój:</label>
+    <select id="room" name="RoomId">
+        @foreach (var room in ViewBag.Rooms)
+        {
+            <option value="@room.Id">@room.Name</option>
+        }
+    </select>
+    <button type="submit">Zarezerwuj</button>
+</form>
