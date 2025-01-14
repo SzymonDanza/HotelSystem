@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;  
+using Microsoft.EntityFrameworkCore;
 using HotelSystem.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,10 +9,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Dodaj kontrolery i widoki
 builder.Services.AddControllersWithViews();
-builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
+// Inicjalizacja danych w bazie
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    SeedData.Initialize(scope.ServiceProvider, dbContext);  // Wywo³anie metody inicjalizuj¹cej
+}
 
 if (!app.Environment.IsDevelopment())
 {

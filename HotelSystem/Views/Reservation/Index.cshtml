@@ -1,55 +1,88 @@
-﻿@model CalendarViewModel
-
-@{
+﻿@{
     ViewData["Title"] = "Kalendarz Rezerwacji";
 }
 
 <div class="container mt-5">
     <h1 class="text-center">@ViewData["Title"]</h1>
-    <div class="calendar mt-4">
-        @for (int month = 0; month < Model.CalendarDays.Count; month++)
-        {
-            <div class="month-container mb-4">
-                <h4 class="text-center">
-                    @System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month + 1)
-                </h4>
-                <div class="row g-2 justify-content-center">
-                    @foreach (var day in Model.CalendarDays[month])
-                    {
-                        @if (day == null)
-                        {
-                            <div class="col-2"></div> <!-- Puste miejsce w kalendarzu -->
-                        }
-                        else
-                        {
-                            <div class="col-2">
-                                <button class="btn @day.CssClass w-100">
-                                    @day.Day
-                                </button>
-                            </div>
-                        }
+    <div class="calendar text-center mt-4">
+        <div id="calendar" class="row flex-wrap justify-content-center">
+            @for (int month = 0; month < 12; month++)
+            {
+                <div class="col-12 mb-4">
+                    @{
+                        var monthName = new DateTime(2023, month + 1, 1).ToString("MMMM");
                     }
+                    <h4>@monthName</h4>
+                    <div class="row g-2">
+                        @foreach (var day in Model.CalendarDays[month])
+                        {
+                            @if (day != null)
+                            {
+                                // Określenie koloru przycisku (zielony, czerwony) w zależności od dostępności
+                                var buttonClass = day.CssClass;
+                                <div class="col-2">
+                                    <button class="btn @buttonClass w-100" data-bs-toggle="modal" data-bs-target="#reservationModal"
+                                            onclick="setReservationDate('@Model.Year', @month + 1, @day.Day)">
+                                        @day.Day
+                                    </button>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-2"></div>  <!-- Puste dni na początku miesiąca -->
+                            }
+                        }
+                    </div>
                 </div>
-            </div>
-        }
+            }
+        </div>
     </div>
 </div>
 
-<style>
-    .calendar {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+<!-- Modal rezerwacji -->
+<div class="modal fade" id="reservationModal" tabindex="-1" aria-labelledby="reservationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reservationModalLabel">Zarezerwuj pokój</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="@Url.Action("Reserve", "Reservation")">
+                    <input type="hidden" id="selectedDate" name="selectedDate" />
+                    <input type="hidden" id="month" name="month" />
+                    <input type="hidden" id="day" name="day" />
+                    <input type="hidden" id="year" name="year" />
+
+                    <div class="mb-3">
+                        <label for="room" class="form-label">Pokój</label>
+                        <select class="form-select" id="room" name="roomId">
+                            @if (ViewBag.Rooms != null && ViewBag.Rooms.Any())
+                            {
+                                foreach (var room in ViewBag.Rooms)
+                                {
+                                    <div>@room.Name</div>
+                                }
+                            }
+                            else
+                            {
+                                <p>No rooms available.</p>
+                            }
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Zarezerwuj</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setReservationDate(year, month, day) {
+        document.getElementById('selectedDate').value = new Date(year, month - 1, day).toISOString().split('T')[0]; // ustawienie daty w formacie yyyy-mm-dd
+        document.getElementById('month').value = month;
+        document.getElementById('day').value = day;
+        document.getElementById('year').value = year;
     }
-    .month-container {
-        width: 100%;
-    }
-    .btn-success {
-        background-color: green;
-        color: white;
-    }
-    .btn-danger {
-        background-color: red;
-        color: white;
-    }
-</style>
+</script>

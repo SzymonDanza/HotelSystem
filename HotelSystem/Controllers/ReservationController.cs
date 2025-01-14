@@ -59,13 +59,10 @@ namespace HotelSystem.Controllers
                     var roomAvailability = roomsAvailability.FirstOrDefault(r => r.Date == date);
                     var isAvailable = roomAvailability != null && roomAvailability.Availability;
 
-                    // Debugowanie danych
-                    Console.WriteLine($"Date: {date.ToString("yyyy-MM-dd")}, Availability: {isAvailable}");
-
                     monthDays.Add(new
                     {
                         Day = day,
-                        CssClass = isAvailable ? "btn-danger" : "btn-success" // Klasa CSS dla dostępności
+                        CssClass = isAvailable ? "btn-success" : "btn-danger" // Klasa CSS dla dostępności
                     });
                 }
 
@@ -74,5 +71,35 @@ namespace HotelSystem.Controllers
 
             return calendarDays;
         }
+
+        public IActionResult Reserve(int year, int month, int day)
+        {
+            // Pobranie listy pokoi z bazy danych
+            ViewBag.Rooms = DbContext.Rooms.ToList();
+
+            // Sprawdzamy dostępność pokoi dla wybranego dnia
+            var selectedDate = new DateTime(year, month, day);
+            var roomAvailability = DbContext.RoomAvailabilities
+                                            .FirstOrDefault(r => r.Date == selectedDate);
+
+            // Jeśli dostępność pokoi na ten dzień jest null, ustawiamy dostępność na false
+            if (roomAvailability == null)
+            {
+                roomAvailability = new RoomAvailability
+                {
+                    Date = selectedDate,
+                    Availability = false // Zakładając, że pokój jest niedostępny, jeżeli brak rekordu
+                };
+            }
+
+            // Zwracamy widok z modelem zawierającym dane o dostępności
+            return View(new ReservationViewModel
+            {
+                SelectedDate = selectedDate,
+                RoomAvailability = roomAvailability
+            });
+        }
+
+        // Dodatkowe akcje rezerwacji, jeśli są wymagane
     }
 }
