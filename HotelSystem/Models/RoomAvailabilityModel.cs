@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-namespace HotelSystem.Models;
-
-
-public class RoomAvailabilityModel
+﻿namespace HotelSystem.Models
 {
-    public int RoomId { get; set; }
-    public string RoomName { get; set; }
+    public class RoomAvailability
+    {
+        public int RoomId { get; set; }
+        public Room Room { get; set; }  
 
-    public Dictionary<DateTime, bool> Availability { get; set; } 
+        public DateTime Date { get; set; }  
+
+        public bool Availability { get; set; }  
+    }
 }

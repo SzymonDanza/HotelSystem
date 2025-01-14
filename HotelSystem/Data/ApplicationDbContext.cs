@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Reflection.Emit;
+﻿using Microsoft.EntityFrameworkCore;
 using HotelSystem.Models;
-
-using Microsoft.EntityFrameworkCore;
 
 namespace HotelSystem.Data
 {
@@ -13,6 +10,7 @@ namespace HotelSystem.Data
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<RoomAvailability> RoomAvailabilities { get; set; }  // DbSet dla RoomAvailability
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -20,7 +18,7 @@ namespace HotelSystem.Data
 
             modelBuilder.Entity<Room>()
                 .Property(r => r.PricePerNight)
-                .HasPrecision(18,2);
+                .HasPrecision(18, 2);
 
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)
@@ -28,4 +26,3 @@ namespace HotelSystem.Data
         }
     }
 }
-
