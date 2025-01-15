@@ -27,6 +27,7 @@ namespace HotelSystem.Data
                 context.SaveChanges();
             }
 
+
             // Dodaj pokoje, jeśli nie istnieją
             if (!context.Rooms.Any())
             {

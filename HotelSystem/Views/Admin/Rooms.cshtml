@@ -1,0 +1,31 @@
+﻿@model List<HotelSystem.Models.Room>
+
+<h1>Lista pokoi</h1>
+<a class="btn btn-primary" asp-action="AddRoom">Dodaj pokój</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nazwa</th>
+            <th>Pojemność</th>
+            <th>Cena za noc</th>
+            <th>Akcje</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var room in Model)
+        {
+            <tr>
+                <td>@room.Name</td>
+                <td>@room.Capacity</td>
+                <td>@room.PricePerNight</td>
+                <td>
+                    <a class="btn btn-warning" asp-action="EditRoom" asp-route-id="@room.Id">Edytuj</a>
+                    <form asp-action="DeleteRoom" asp-route-id="@room.Id" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger">Usuń</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

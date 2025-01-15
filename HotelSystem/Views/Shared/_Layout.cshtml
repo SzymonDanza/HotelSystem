@@ -28,21 +28,23 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Reservation" asp-action="Index">Rezerwacje</a>  <!-- Link do strony Reservation -->
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Reservation" asp-action="Index">Rezerwacje</a>
                         </li>
                     </ul>
                     <ul class="navbar-nav">
                         @if (HttpContextAccessor.HttpContext.Session.GetString("Username") != null)
                         {
                             <li class="nav-item">
-                                <span class="nav-link">Witaj, @HttpContextAccessor.HttpContext.Session.GetString("Username")!</span>
+                                <span class="navbar-text">Witaj, @HttpContextAccessor.HttpContext.Session.GetString("Username")!</span>
                             </li>
+
                             @if (HttpContextAccessor.HttpContext.Session.GetString("IsAdmin") == "True")
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Panel">Panel Admina</a>
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">Panel Admina</a>
                                 </li>
                             }
+
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Wyloguj</a>
                             </li>
@@ -57,7 +59,6 @@
                             </li>
                         }
                     </ul>
-
                 </div>
             </div>
         </nav>
