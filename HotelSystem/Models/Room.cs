@@ -1,10 +1,11 @@
-﻿namespace HotelSystem.Models;
-
-public class Room
+﻿namespace HotelSystem.Models
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public int Capacity { get; set; }
-    public decimal PricePerNight { get; set; }
-    public ICollection<Reservation>? Reservations { get; set; }
+    public class Room
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Capacity { get; set; }
+        public decimal PricePerNight { get; set; }
+        public ICollection<Reservation>? Reservations { get; set; }
+    }
 }

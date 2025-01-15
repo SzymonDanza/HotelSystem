@@ -20,13 +20,11 @@ namespace HotelSystem.Controllers
             var today = DateTime.Now;
             int year = today.Year;
 
-            // Pobranie dostępności pokoi na dany rok
             var roomsAvailability = DbContext.RoomAvailabilities
                                              .Where(r => r.Date.Year == year)
                                              .Include(r => r.Room)
                                              .ToList();
 
-            // Przygotowanie modelu widoku
             var calendarViewModel = new CalendarViewModel
             {
                 Year = year,
@@ -46,13 +44,11 @@ namespace HotelSystem.Controllers
                 var daysInMonth = DateTime.DaysInMonth(year, month + 1);
                 var firstDay = new DateTime(year, month + 1, 1).DayOfWeek;
 
-                // Dodaj puste dni przed pierwszym dniem miesiąca
                 for (int i = 0; i < (int)firstDay; i++)
                 {
                     monthDays.Add(null);
                 }
 
-                // Dodaj dni miesiąca z informacją o dostępności
                 for (int day = 1; day <= daysInMonth; day++)
                 {
                     var date = new DateTime(year, month + 1, day);
@@ -62,7 +58,7 @@ namespace HotelSystem.Controllers
                     monthDays.Add(new
                     {
                         Day = day,
-                        CssClass = isAvailable ? "btn-success" : "btn-danger" // Klasa CSS dla dostępności
+                        CssClass = isAvailable ? "available" : "unavailable"
                     });
                 }
 
@@ -74,38 +70,31 @@ namespace HotelSystem.Controllers
 
         public IActionResult Reserve(int year, int month, int day)
         {
-            // Ustawiamy wybraną datę
             var selectedDate = new DateTime(year, month, day);
 
-            // Pobieramy dostępność pokoi na wybraną datę
             var availableRoomIds = DbContext.RoomAvailabilities
                                              .Where(r => r.Date == selectedDate && r.Availability)
-                                             .Select(r => r.RoomId)  // Pobieramy tylko ID dostępnych pokoi
+                                             .Select(r => r.RoomId)
                                              .ToList();
 
-            // Pobieramy listę dostępnych pokoi z tabeli Rooms na podstawie dostępnych ID
             var rooms = DbContext.Rooms
-                                 .Where(r => availableRoomIds.Contains(r.Id))  // Filtrujemy pokoje po dostępnych ID
+                                 .Where(r => availableRoomIds.Contains(r.Id))
                                  .ToList();
 
-            // Tworzymy ViewModel
             var viewModel = new ReservationViewModel
             {
                 SelectedDate = selectedDate,
                 AvailableRooms = rooms
             };
 
-            // Zwracamy widok z ViewModel
             return View(viewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> ConfirmReservation(int roomId, DateTime selectedDate)
         {
-            // Pobieranie ID aktualnie zalogowanego użytkownika
             var userId = User.Identity.IsAuthenticated ? int.Parse(User.Identity.Name) : 0;
 
-            // Sprawdzamy, czy pokój jest dostępny na dany dzień
             var roomAvailability = await DbContext.RoomAvailabilities
                                                   .FirstOrDefaultAsync(r => r.RoomId == roomId && r.Date == selectedDate);
 
@@ -115,29 +104,21 @@ namespace HotelSystem.Controllers
                 return View();
             }
 
-            // Tworzymy rezerwację
             var reservation = new Reservation
             {
                 RoomId = roomId,
                 StartDate = selectedDate,
-                EndDate = selectedDate.AddDays(1),  // Zakładamy, że rezerwacja jest na 1 dzień
+                EndDate = selectedDate.AddDays(1),
                 UserId = userId,
-                User = DbContext.Users.FirstOrDefault(u => u.Id == userId)  // Pobieramy użytkownika na podstawie UserId
+                User = DbContext.Users.FirstOrDefault(u => u.Id == userId)
             };
 
-            // Dodajemy rezerwację do bazy danych
             DbContext.Reservations.Add(reservation);
-
-            // Zmieniamy dostępność pokoju na niedostępny
             roomAvailability.Availability = false;
 
-            // Zapisujemy zmiany w bazie danych
             await DbContext.SaveChangesAsync();
 
-            // Przekierowujemy na stronę potwierdzenia rezerwacji
             return RedirectToAction("ReservationConfirmation", new { reservationId = reservation.Id });
         }
-
-        // Dodatkowe akcje rezerwacji, jeśli są wymagane
     }
 }
