@@ -74,36 +74,31 @@ namespace HotelSystem.Controllers
 
         public IActionResult Reserve(int year, int month, int day)
         {
-            // Pobieramy listę pokoi z bazy danych
-            var rooms = DbContext.Rooms.ToList();
-            
-
-            // Sprawdzamy dostępność pokoi dla wybranego dnia
+            // Ustawiamy wybraną datę
             var selectedDate = new DateTime(year, month, day);
-            var roomAvailability = DbContext.RoomAvailabilities
-                                            .FirstOrDefault(r => r.Date == selectedDate);
 
-            // Jeśli dostępność pokoi na ten dzień jest null, ustawiamy dostępność na false
-            if (roomAvailability == null)
-            {
-                roomAvailability = new RoomAvailability
-                {
-                    Date = selectedDate,
-                    Availability = false // Zakładając, że pokój jest niedostępny, jeżeli brak rekordu
-                };
-            }
+            // Pobieramy dostępność pokoi na wybraną datę
+            var availableRoomIds = DbContext.RoomAvailabilities
+                                             .Where(r => r.Date == selectedDate && r.Availability)
+                                             .Select(r => r.RoomId)  // Pobieramy tylko ID dostępnych pokoi
+                                             .ToList();
+
+            // Pobieramy listę dostępnych pokoi z tabeli Rooms na podstawie dostępnych ID
+            var rooms = DbContext.Rooms
+                                 .Where(r => availableRoomIds.Contains(r.Id))  // Filtrujemy pokoje po dostępnych ID
+                                 .ToList();
 
             // Tworzymy ViewModel
             var viewModel = new ReservationViewModel
             {
                 SelectedDate = selectedDate,
-                RoomAvailability = roomAvailability,
                 AvailableRooms = rooms
             };
 
             // Zwracamy widok z ViewModel
             return View(viewModel);
         }
+
 
 
         [HttpPost]
