@@ -62,7 +62,7 @@ namespace HotelSystem.Controllers
                     monthDays.Add(new
                     {
                         Day = day,
-                        CssClass = isAvailable ? "btn-success" : "btn-success" // Klasa CSS dla dostępności
+                        CssClass = isAvailable ? "btn-success" : "btn-danger" // Klasa CSS dla dostępności
                     });
                 }
 
@@ -76,7 +76,7 @@ namespace HotelSystem.Controllers
         {
             // Pobieramy listę pokoi z bazy danych
             var rooms = DbContext.Rooms.ToList();
-            ViewBag.Rooms = rooms;  // Opcjonalnie, jeśli chcesz wysłać pokoje za pomocą ViewBag
+            
 
             // Sprawdzamy dostępność pokoi dla wybranego dnia
             var selectedDate = new DateTime(year, month, day);

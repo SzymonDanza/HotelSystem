@@ -5,9 +5,9 @@
 <form method="post">
     <label for="room">Wybierz pokój:</label>
     <select id="room" name="RoomId">
-        @foreach (var room in ViewBag.Rooms)
+        @foreach (var room in Model.AvailableRooms)  
         {
-            <option value="@room.Id">@room.Name</option>
+            <option value="@room.Id">@room.Name</option>  <!-- Room.Name jest dostępne w modelu -->
         }
     </select>
     <button type="submit">Zarezerwuj</button>
