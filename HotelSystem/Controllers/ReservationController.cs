@@ -1,124 +1,189 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using HotelSystem.Data;
 using HotelSystem.Models;
-using System.Linq;
-using HotelSystem.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace HotelSystem.Controllers
+public class ReservationController : Controller
 {
-    public class ReservationController : Controller
+    private readonly ApplicationDbContext DbContext;
+
+    public ReservationController(ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext DbContext;
+        DbContext = context;
+    }
 
-        public ReservationController(ApplicationDbContext context)
+    public IActionResult Index()
+    {
+        var today = DateTime.Now;
+        int year = today.Year;
+
+        var roomsAvailability = DbContext.RoomAvailabilities
+                                         .Where(r => r.Date.Year == year)
+                                         .Include(r => r.Room)
+                                         .ToList();
+
+        var calendarViewModel = new CalendarViewModel
         {
-            DbContext = context;
-        }
+            Year = year,
+            CalendarDays = GenerateCalendarData(year, roomsAvailability)
+        };
 
-        public IActionResult Index()
+        return View(calendarViewModel);
+    }
+
+    private List<dynamic> GenerateCalendarData(int year, List<RoomAvailability> roomsAvailability)
+    {
+        var calendarDays = new List<dynamic>();
+
+        for (int month = 0; month < 12; month++)
         {
-            var today = DateTime.Now;
-            int year = today.Year;
+            var monthDays = new List<dynamic>();
+            var daysInMonth = DateTime.DaysInMonth(year, month + 1);
+            var firstDay = new DateTime(year, month + 1, 1).DayOfWeek;
 
-            var roomsAvailability = DbContext.RoomAvailabilities
-                                             .Where(r => r.Date.Year == year)
-                                             .Include(r => r.Room)
-                                             .ToList();
-
-            var calendarViewModel = new CalendarViewModel
+            for (int i = 0; i < (int)firstDay; i++)
             {
-                Year = year,
-                CalendarDays = GenerateCalendarData(year, roomsAvailability)
-            };
-
-            return View(calendarViewModel);
-        }
-
-        private List<dynamic> GenerateCalendarData(int year, List<RoomAvailability> roomsAvailability)
-        {
-            var calendarDays = new List<dynamic>();
-
-            for (int month = 0; month < 12; month++)
-            {
-                var monthDays = new List<dynamic>();
-                var daysInMonth = DateTime.DaysInMonth(year, month + 1);
-                var firstDay = new DateTime(year, month + 1, 1).DayOfWeek;
-
-                for (int i = 0; i < (int)firstDay; i++)
-                {
-                    monthDays.Add(null);
-                }
-
-                for (int day = 1; day <= daysInMonth; day++)
-                {
-                    var date = new DateTime(year, month + 1, day);
-                    var roomAvailability = roomsAvailability.FirstOrDefault(r => r.Date == date);
-                    var isAvailable = roomAvailability != null && roomAvailability.Availability;
-
-                    monthDays.Add(new
-                    {
-                        Day = day,
-                        CssClass = isAvailable ? "available" : "unavailable"
-                    });
-                }
-
-                calendarDays.Add(monthDays);
+                monthDays.Add(null);
             }
 
-            return calendarDays;
+            for (int day = 1; day <= daysInMonth; day++)
+            {
+                var date = new DateTime(year, month + 1, day);
+                var roomAvailability = roomsAvailability.FirstOrDefault(r => r.Date == date);
+                var isAvailable = roomAvailability != null && roomAvailability.Availability;
+
+                monthDays.Add(new
+                {
+                    Day = day,
+                    CssClass = isAvailable ? "available" : "unavailable"
+                });
+            }
+
+            calendarDays.Add(monthDays);
         }
 
-        public IActionResult Reserve(int year, int month, int day)
+        return calendarDays;
+    }
+
+    public IActionResult Reserve(int year, int month, int day)
+    {
+        var selectedDate = new DateTime(year, month, day);
+
+        var availableRoomIds = DbContext.RoomAvailabilities
+                                         .Where(r => r.Date == selectedDate && r.Availability)
+                                         .Select(r => r.RoomId)
+                                         .ToList();
+
+        var rooms = DbContext.Rooms
+                             .Where(r => availableRoomIds.Contains(r.Id))
+                             .ToList();
+
+        var viewModel = new ReservationViewModel
         {
-            var selectedDate = new DateTime(year, month, day);
+            SelectedDate = selectedDate,
+            AvailableRooms = rooms
+        };
 
-            var availableRoomIds = DbContext.RoomAvailabilities
-                                             .Where(r => r.Date == selectedDate && r.Availability)
-                                             .Select(r => r.RoomId)
-                                             .ToList();
+        return View(viewModel);
+    }
 
-            var rooms = DbContext.Rooms
-                                 .Where(r => availableRoomIds.Contains(r.Id))
-                                 .ToList();
+
+    [HttpPost]
+    public async Task<IActionResult> ConfirmReservation(int roomId, DateTime selectedDate)
+    {
+        // Sprawdzenie, czy użytkownik jest zalogowany
+        var userId = User.Identity.IsAuthenticated ? int.Parse(User.Identity.Name) : 0;
+
+        // Sprawdzamy, czy użytkownik istnieje
+        var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            ModelState.AddModelError("", "Użytkownik nie został znaleziony.");
+            return View(); // Możesz przekazać odpowiedni widok z komunikatem o błędzie
+        }
+
+        // Sprawdzamy dostępność pokoju na wybraną datę
+        var roomAvailability = await DbContext.RoomAvailabilities
+                                               .FirstOrDefaultAsync(r => r.RoomId == roomId && r.Date == selectedDate);
+
+        if (roomAvailability == null || !roomAvailability.Availability)
+        {
+            ModelState.AddModelError("", "Pokój jest niedostępny w wybranym dniu.");
+
+            // Tworzymy model widoku, aby przekazać go do widoku
+            var availableRooms = DbContext.RoomAvailabilities
+                                          .Where(r => r.Date == selectedDate && r.Availability)
+                                          .Select(r => r.Room)
+                                          .ToList();
 
             var viewModel = new ReservationViewModel
             {
                 SelectedDate = selectedDate,
-                AvailableRooms = rooms
+                AvailableRooms = availableRooms
             };
 
+            // Zwracamy widok z odpowiednim modelem
             return View(viewModel);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ConfirmReservation(int roomId, DateTime selectedDate)
+        // Sprawdzamy, czy pokój istnieje
+        var room = await DbContext.Rooms.FirstOrDefaultAsync(r => r.Id == roomId);
+        if (room == null)
         {
-            var userId = User.Identity.IsAuthenticated ? int.Parse(User.Identity.Name) : 0;
-
-            var roomAvailability = await DbContext.RoomAvailabilities
-                                                  .FirstOrDefaultAsync(r => r.RoomId == roomId && r.Date == selectedDate);
-
-            if (roomAvailability == null || !roomAvailability.Availability)
-            {
-                ModelState.AddModelError("", "Pokój jest niedostępny w wybranym dniu.");
-                return View();
-            }
-
-            var reservation = new Reservation
-            {
-                RoomId = roomId,
-                StartDate = selectedDate,
-                EndDate = selectedDate.AddDays(1),
-                UserId = userId,
-                User = DbContext.Users.FirstOrDefault(u => u.Id == userId)
-            };
-
-            DbContext.Reservations.Add(reservation);
-            roomAvailability.Availability = false;
-
-            await DbContext.SaveChangesAsync();
-
-            return RedirectToAction("ReservationConfirmation", new { reservationId = reservation.Id });
+            ModelState.AddModelError("", "Pokój nie został znaleziony.");
+            return View(); // Możesz przekazać odpowiedni widok z komunikatem o błędzie
         }
+
+        // Tworzymy rezerwację
+        var reservation = new Reservation
+        {
+            RoomId = roomId,
+            StartDate = selectedDate,
+            EndDate = selectedDate.AddDays(1), // Zakładamy, że rezerwacja jest na 1 dzień
+            UserId = userId,
+            User = user  // Przypisujemy użytkownika
+        };
+
+        // Dodajemy rezerwację do bazy danych
+        DbContext.Reservations.Add(reservation);
+
+        // Zmieniamy dostępność pokoju na niedostępny
+        roomAvailability.Availability = false;
+
+        // Zapisujemy zmiany w bazie danych
+        await DbContext.SaveChangesAsync();
+
+        // Przekierowanie do strony z potwierdzeniem rezerwacji
+        return RedirectToAction("ReservationConfirmation", new { reservationId = reservation.Id });
+    }
+
+
+    private void UpdateRoomAvailabilityAfterReservation(int roomId, DateTime selectedDate)
+    {
+        // Zmieniamy dostępność pokoju na 'false' dla wybranego dnia
+        var availabilityEntry = DbContext.RoomAvailabilities
+                                        .FirstOrDefault(r => r.RoomId == roomId && r.Date == selectedDate);
+
+        if (availabilityEntry != null)
+        {
+            availabilityEntry.Availability = false;
+            DbContext.SaveChanges();
+        }
+    }
+
+    // Opcjonalnie, jeśli masz metodę potwierdzenia rezerwacji:
+    public IActionResult ReservationConfirmation(int reservationId)
+    {
+        var reservation = DbContext.Reservations
+                                   .Include(r => r.Room)
+                                   .Include(r => r.User)
+                                   .FirstOrDefault(r => r.Id == reservationId);
+
+        if (reservation == null)
+        {
+            return NotFound();
+        }
+
+        return View(reservation);
     }
 }

@@ -1,0 +1,19 @@
+﻿@model HotelSystem.Models.Reservation
+
+@{
+    ViewData["Title"] = "Potwierdzenie rezerwacji";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (Model != null)
+{
+    <p>Rezerwacja dla pokoju: @Model.Room.Name</p>
+    <p>Data rozpoczęcia: @Model.StartDate.ToShortDateString()</p>
+    <p>Data zakończenia: @Model.EndDate.ToShortDateString()</p>
+    <p>Użytkownik: @Model.User.Username</p>
+}
+else
+{
+    <p>Nie udało się znaleźć rezerwacji. Spróbuj ponownie.</p>
+}

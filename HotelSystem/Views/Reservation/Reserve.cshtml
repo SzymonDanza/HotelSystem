@@ -1,14 +1,23 @@
-﻿@model ReservationViewModel
+﻿@model HotelSystem.Models.ReservationViewModel
+
+@{
+    ViewData["Title"] = "Rezerwacja pokoju";
+}
 
 <h2>Rezerwacja pokoju na dzień: @Model.SelectedDate.ToShortDateString()</h2>
 
-<form method="post">
-    <label for="room">Wybierz pokój:</label>
-    <select id="room" name="RoomId">
-        @foreach (var room in Model.AvailableRooms)
-        {
-            <option value="@room.Id">@room.Name</option>  <!-- Room.Name jest dostępne w modelu -->
-        }
-    </select>
-    <button type="submit">Zarezerwuj</button>
+<form asp-action="ConfirmReservation" method="post">
+    <div class="form-group">
+        <label for="roomId">Wybierz pokój:</label>
+        <select id="roomId" name="roomId" class="form-control">
+            @foreach (var room in Model.AvailableRooms)
+            {
+                <option value="@room.Id">@room.Name</option>
+            }
+        </select>
+    </div>
+
+    <input type="hidden" name="selectedDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+
+    <button type="submit" class="btn btn-primary">Zarezerwuj</button>
 </form>
