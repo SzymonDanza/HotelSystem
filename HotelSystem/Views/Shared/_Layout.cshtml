@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -29,6 +31,33 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Reservation" asp-action="Index">Rezerwacje</a>  <!-- Link do strony Reservation -->
                         </li>
                     </ul>
+                    <ul class="navbar-nav">
+                        @if (HttpContextAccessor.HttpContext.Session.GetString("Username") != null)
+                        {
+                            <li class="nav-item">
+                                <span class="nav-link">Witaj, @HttpContextAccessor.HttpContext.Session.GetString("Username")!</span>
+                            </li>
+                            @if (HttpContextAccessor.HttpContext.Session.GetString("IsAdmin") == "True")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Panel">Panel Admina</a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Wyloguj</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Zaloguj</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Zarejestruj</a>
+                            </li>
+                        }
+                    </ul>
+
                 </div>
             </div>
         </nav>

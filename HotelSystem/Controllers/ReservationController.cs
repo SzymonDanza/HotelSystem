@@ -99,8 +99,6 @@ namespace HotelSystem.Controllers
             return View(viewModel);
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> ConfirmReservation(int roomId, DateTime selectedDate)
         {
@@ -139,9 +137,6 @@ namespace HotelSystem.Controllers
             // Przekierowujemy na stronę potwierdzenia rezerwacji
             return RedirectToAction("ReservationConfirmation", new { reservationId = reservation.Id });
         }
-
-
-
 
         // Dodatkowe akcje rezerwacji, jeśli są wymagane
     }

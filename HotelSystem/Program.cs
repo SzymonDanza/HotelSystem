@@ -4,16 +4,29 @@ using HotelSystem.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Dodaj ApplicationDbContext do kontenera us³ug DI
+// Dodanie ApplicationDbContext do kontenera us³ug
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Dodaj kontrolery i widoki
+// Dodanie kontrolerów z widokami
 builder.Services.AddControllersWithViews();
 
+// Rejestracja HttpContextAccessor (wa¿ne: przed builder.Build())
+builder.Services.AddHttpContextAccessor();
+
+// Rejestracja sesji (jeœli jest potrzebna w logowaniu)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Budowa aplikacji
 var app = builder.Build();
 
-// Inicjalizacja danych w bazie
+// Inicjalizacja bazy danych
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -29,18 +42,22 @@ using (var scope = app.Services.CreateScope())
     availabilityService.UpdateRoomAvailability(currentYear);
 }
 
+// Obs³uga b³êdów w œrodowisku produkcyjnym
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
+// Middleware dla aplikacji
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession(); // Middleware dla sesji
 app.UseAuthorization();
 
+// Konfiguracja routingu
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

@@ -1,0 +1,14 @@
+﻿@if (ViewBag.Error != null)
+{
+    <p style="color: red;">@ViewBag.Error</p>
+}
+
+<form method="post">
+    <label for="username">Nazwa użytkownika:</label>
+    <input type="text" id="username" name="username" required />
+
+    <label for="password">Hasło:</label>
+    <input type="password" id="password" name="password" required />
+
+    <button type="submit">Zaloguj</button>
+</form>
