@@ -1,0 +1,38 @@
+﻿@model List<Reservation>
+
+<h2>@(User.IsInRole("Admin") ? "Wszystkie Rezerwacje" : "Moje Rezerwacje")</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Pokój</th>
+            <th>Data rozpoczęcia</th>
+            <th>Data zakończenia</th>
+            @if (User.IsInRole("Admin"))
+            {
+                <th>Użytkownik</th>
+            }
+            <th>Akcje</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var reservation in Model)
+        {
+            <tr>
+                <td>@reservation.Room.Name</td>
+                <td>@reservation.StartDate.ToShortDateString()</td>
+                <td>@reservation.EndDate.ToShortDateString()</td>
+                @if (User.IsInRole("Admin"))
+                {
+                    
+                }
+                <td>
+                    <form method="post" asp-action="DeleteReservation">
+                        <input type="hidden" name="reservationId" value="@reservation.Id" />
+                        <button type="submit" class="btn btn-danger">Usuń</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

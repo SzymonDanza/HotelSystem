@@ -185,4 +185,59 @@ public class ReservationController : Controller
 
         return View(reservation);
     }
+
+    public async Task<IActionResult> MyReservations()
+    {
+        // Sprawdzamy, czy użytkownik jest zalogowany
+        var userId = User.Identity.IsAuthenticated ? int.Parse(User.Identity.Name) : 0;
+
+        // Pobieramy rezerwacje zalogowanego użytkownika
+        var reservations = await DbContext.Reservations
+                                           .Where(r => r.UserId == userId)
+                                           .Include(r => r.Room)
+                                           .ToListAsync();
+
+        return View(reservations);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteReservation(int reservationId)
+    {
+        // Pobieramy rezerwację
+        var reservation = await DbContext.Reservations
+                                          .Include(r => r.Room)
+                                          .FirstOrDefaultAsync(r => r.Id == reservationId);
+
+        if (reservation == null)
+        {
+            return NotFound(); // Zwracamy stronę 404, jeśli rezerwacja nie istnieje
+        }
+
+        // Sprawdzamy, czy użytkownik jest właścicielem rezerwacji
+        var userId = User.Identity.IsAuthenticated ? int.Parse(User.Identity.Name) : 0;
+
+        if (reservation.UserId != userId)
+        {
+            return Forbid(); // Brak dostępu
+        }
+
+        // Usuwamy rezerwację
+        DbContext.Reservations.Remove(reservation);
+
+        // Oznaczamy pokój jako dostępny
+        var roomAvailability = await DbContext.RoomAvailabilities
+                                               .FirstOrDefaultAsync(r => r.RoomId == reservation.RoomId && r.Date == reservation.StartDate);
+
+        if (roomAvailability != null)
+        {
+            roomAvailability.Availability = true;
+        }
+
+        await DbContext.SaveChangesAsync();
+
+        // Przekierowanie z powrotem do listy rezerwacji
+        return RedirectToAction(nameof(MyReservations));
+    }
+
+
 }
