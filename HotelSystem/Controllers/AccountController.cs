@@ -88,7 +88,13 @@ namespace HotelSystem.Controllers
 
         public IActionResult Logout()
         {
+            // Usunięcie sesji użytkownika
             HttpContext.Session.Clear();
+
+            // Usunięcie logowania z ciasteczek
+            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Przekierowanie na stronę logowania
             return RedirectToAction("Login");
         }
     }

@@ -90,8 +90,13 @@ public class ReservationController : Controller
     [HttpPost]
     public async Task<IActionResult> ConfirmReservation(int roomId, DateTime selectedDate)
     {
+        if (!User.Identity.IsAuthenticated)
+        {
+            return RedirectToAction("Login", "Account"); // Przekierowanie do strony logowania
+        }
+
         // Sprawdzenie, czy użytkownik jest zalogowany
-        var userId = User.Identity.IsAuthenticated ? int.Parse(User.Identity.Name) : -1;
+        var userId = int.Parse(User.Identity.Name);
 
         // Sprawdzamy, czy użytkownik istnieje
         var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
