@@ -19,60 +19,60 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Sesja wygasa po 30 minutach
-    options.Cookie.HttpOnly = true; // Zwiêkszone bezpieczeñstwo ciasteczek
-    options.Cookie.IsEssential = true; // Ciasteczka s¹ wymagane dla dzia³ania sesji
+    options.IdleTimeout = TimeSpan.FromMinutes(30); 
+    options.Cookie.HttpOnly = true; 
+    options.Cookie.IsEssential = true; 
 });
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login"; // Œcie¿ka logowania
-        options.AccessDeniedPath = "/Account/AccessDenied"; // Œcie¿ka odmowy dostêpu
-        options.Cookie.Name = "HotelSystemAuth"; // Nazwa ciasteczka
+        options.LoginPath = "/Account/Login"; 
+        options.AccessDeniedPath = "/Account/AccessDenied"; 
+        options.Cookie.Name = "HotelSystemAuth"; 
     });
 
 builder.Services.AddAuthorization();
 
 
-// Budowa aplikacji
+
 var app = builder.Build();
 
-// Inicjalizacja bazy danych
+
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-    // Inicjalizacja danych w bazie danych
+    
     SeedData.Initialize(scope.ServiceProvider, dbContext);
 
-    // Aktualizacja dostêpnoœci pokoi
+    
     var availabilityService = new AvailabilityService(dbContext);
     availabilityService.UpdateRoomAvailability(DateTime.Now.Year);
 }
 
-// Obs³uga b³êdów w œrodowisku produkcyjnym
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
-// Middleware dla aplikacji
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseSession(); // Middleware sesji
-app.UseAuthentication(); // Middleware uwierzytelniania
-app.UseAuthorization(); // Middleware autoryzacji
+app.UseSession(); 
+app.UseAuthentication(); 
+app.UseAuthorization(); 
 
-// Konfiguracja routingu
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
-// Uruchomienie aplikacji
+
 app.Run();

@@ -7,7 +7,7 @@ namespace HotelSystem.Data
     {
         public static void Initialize(IServiceProvider serviceProvider, ApplicationDbContext context)
         {
-            // Dodaj użytkowników, jeśli nie istnieją
+            
             if (!context.Users.Any())
             {
                 context.Users.AddRange(
@@ -15,20 +15,20 @@ namespace HotelSystem.Data
                     {
                         Username = "admin",
                         Password = "admin123",
-                        IsAdmin = true // Admin
+                        IsAdmin = true 
                     },
                     new User
                     {
                         Username = "user",
                         Password = "user123",
-                        IsAdmin = false // Zwykły użytkownik
+                        IsAdmin = false 
                     }
                 );
                 context.SaveChanges();
             }
 
 
-            // Dodaj pokoje, jeśli nie istnieją
+            
             if (!context.Rooms.Any())
             {
                 context.Rooms.AddRange(
@@ -40,15 +40,15 @@ namespace HotelSystem.Data
                 context.SaveChanges();
             }
 
-            // Dodaj dostępność pokoi, jeśli nie istnieje
+            
             if (!context.RoomAvailabilities.Any())
             {
                 var today = DateTime.Now.Date;
 
-                // Pobierz listę pokoi z bazy danych
+                
                 var rooms = context.Rooms.ToList();
 
-                // Generuj dostępność w pamięci
+                
                 var roomAvailabilities = rooms.SelectMany(room =>
                     Enumerable.Range(0, 30).Select(offset => new RoomAvailability
                     {
@@ -58,7 +58,7 @@ namespace HotelSystem.Data
                     })
                 ).ToList();
 
-                // Zapisz dostępności w bazie danych
+               
                 context.RoomAvailabilities.AddRange(roomAvailabilities);
                 context.SaveChanges();
 

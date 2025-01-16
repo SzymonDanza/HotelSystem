@@ -12,7 +12,7 @@ public class RoomController : Controller
 
     public IActionResult Index()
     {
-        // Pobieramy wszystkie pokoje
+        
         var rooms = DbContext.Rooms
                              .Select(r => new RoomViewModel
                              {

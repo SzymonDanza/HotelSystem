@@ -14,30 +14,28 @@ public class AvailabilityService
 
     public void UpdateRoomAvailability(int year)
     {
-        // Ustal zakres dat na cały rok
-        var startDate = new DateTime(year, 1, 1); // 1 stycznia
-        var endDate = new DateTime(year, 12, 31); // 31 grudnia
+        //  zakres dat na cały rok
+        var startDate = new DateTime(year, 1, 1); 
+        var endDate = new DateTime(year, 12, 31); 
 
-        // Pobierz wszystkie pokoje z bazy danych
         var rooms = DbContext.Rooms.ToList();
 
-        // Iteruj po każdej dacie w podanym zakresie
         for (var date = startDate; date <= endDate; date = date.AddDays(1))
         {
             foreach (var room in rooms)
             {
-                // Sprawdź, czy istnieje już wpis dla danego pokoju i daty
+                
                 var existingAvailability = DbContext.RoomAvailabilities
                                                     .FirstOrDefault(r => r.RoomId == room.Id && r.Date == date);
 
                 if (existingAvailability == null)
                 {
-                    // Twórz nowy wpis dla tego pokoju i daty
+                    
                     var newAvailability = new RoomAvailability
                     {
                         RoomId = room.Id,
                         Date = date,
-                        Availability = true // Domyślnie zakładamy, że pokój jest dostępny
+                        Availability = true 
                     };
 
                     DbContext.RoomAvailabilities.Add(newAvailability);
@@ -45,7 +43,7 @@ public class AvailabilityService
             }
         }
 
-        // Zapisz zmiany w bazie danych
+        
         DbContext.SaveChanges();
     }
 }

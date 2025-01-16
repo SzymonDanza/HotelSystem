@@ -30,7 +30,7 @@ namespace HotelSystem.Controllers
         // Lista użytkowników
         public IActionResult Users()
         {
-            // Sprawdzenie, czy użytkownik jest adminem
+            
             var isAdmin = HttpContext.Session.GetString("IsAdmin");
             if (isAdmin != "True")
             {
@@ -44,7 +44,7 @@ namespace HotelSystem.Controllers
         // Lista rezerwacji
         public IActionResult Reservations()
         {
-            // Sprawdzenie, czy użytkownik jest adminem
+            
             var isAdmin = HttpContext.Session.GetString("IsAdmin");
             if (isAdmin != "True")
             {
@@ -74,7 +74,7 @@ namespace HotelSystem.Controllers
                                         .FirstOrDefault(r => r.Id == id);
             if (reservation != null)
             {
-                // Zmień dostępność pokoju na wybrany okres
+                
                 var roomAvailabilities = _dbContext.RoomAvailabilities
                                                    .Where(ra => ra.RoomId == reservation.RoomId &&
                                                                 ra.Date >= reservation.StartDate &&
@@ -86,18 +86,18 @@ namespace HotelSystem.Controllers
                     availability.Availability = true;
                 }
 
-                // Usuń rezerwację
+                
                 _dbContext.Reservations.Remove(reservation);
                 _dbContext.SaveChanges();
             }
             return RedirectToAction("Reservations");
         }
 
-        // Usuwanie użytkownika
+       
         [HttpPost]
         public IActionResult DeleteUser(int userId)
         {
-            // Sprawdzenie, czy użytkownik jest adminem
+            
             var isAdmin = HttpContext.Session.GetString("IsAdmin");
             if (isAdmin != "True")
             {
@@ -126,7 +126,7 @@ namespace HotelSystem.Controllers
             return View(rooms);
         }
 
-        // Formularz dodawania pokoju
+        
         public IActionResult AddRoom()
         {
             var isAdmin = HttpContext.Session.GetString("IsAdmin");
@@ -156,7 +156,7 @@ namespace HotelSystem.Controllers
             return View(room);
         }
 
-        // Formularz edycji pokoju
+        
         public IActionResult EditRoom(int id)
         {
             var isAdmin = HttpContext.Session.GetString("IsAdmin");
@@ -191,7 +191,7 @@ namespace HotelSystem.Controllers
             return View(room);
         }
 
-        // Usuwanie pokoju
+        
         [HttpPost]
         public IActionResult DeleteRoom(int id)
         {

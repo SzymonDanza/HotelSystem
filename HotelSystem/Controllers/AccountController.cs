@@ -32,11 +32,11 @@ namespace HotelSystem.Controllers
 
             if (user != null)
             {
-                // Ustaw sesję
+                
                 HttpContext.Session.SetString("Username", user.Username);
                 HttpContext.Session.SetString("IsAdmin", user.IsAdmin.ToString());
 
-                // Zaloguj użytkownika
+                // Logowanie uzytkownika
                 var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, user.Id.ToString()),
@@ -48,7 +48,7 @@ namespace HotelSystem.Controllers
 
                 HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                // Przekieruj użytkownika w zależności od roli
+               
                 if (user.IsAdmin)
                 {
                     return RedirectToAction("Index", "Admin");
@@ -56,7 +56,6 @@ namespace HotelSystem.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            // W przypadku błędu logowania
             ModelState.AddModelError("", "Nieprawidłowa nazwa użytkownika lub hasło.");
             return View();
         }
@@ -80,7 +79,7 @@ namespace HotelSystem.Controllers
                 return View();
             }
 
-            user.IsAdmin = false; // Domyślnie nowy użytkownik nie jest adminem
+            user.IsAdmin = false; 
             _dbContext.Users.Add(user);
             _dbContext.SaveChanges();
             return RedirectToAction("Login");
@@ -88,13 +87,13 @@ namespace HotelSystem.Controllers
 
         public IActionResult Logout()
         {
-            // Usunięcie sesji użytkownika
+            
             HttpContext.Session.Clear();
 
-            // Usunięcie logowania z ciasteczek
+            
             HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-            // Przekierowanie na stronę logowania
+            
             return RedirectToAction("Login");
         }
     }

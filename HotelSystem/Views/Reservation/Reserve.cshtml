@@ -7,20 +7,20 @@
 <h2>Rezerwacja pokoju na dzień: @Model.SelectedDate.ToShortDateString()</h2>
 
 <form method="post" action="@Url.Action("ConfirmReservation", "Reservation")">
-    <!-- Make start date read-only and set it to the selected date -->
+    
     <div>
         <label>Wybierz datę rozpoczęcia:</label>
         <input type="date" name="startDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" readonly />
     </div>
 
-    <!-- Make end date read-only initially, and provide buttons to increment the date -->
+    
     <div>
         <label>Wybierz datę zakończenia:</label>
         <input type="date" id="endDate" name="endDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" readonly />
         <button type="button" id="incrementEndDate" class="btn btn-primary">+1 dzień</button>
     </div>
 
-    <!-- Room selection dropdown -->
+    
     <div>
         <label>Wybierz pokój:</label>
         <select name="roomId">
@@ -34,21 +34,21 @@
     <button type="submit">Potwierdź rezerwację</button>
 </form>
 
-<!-- JavaScript to handle end date increment -->
+
 <script>
-    // Get the start and end date input elements
+    
     var startDate = new Date('@Model.SelectedDate.ToString("yyyy-MM-dd")');
     var endDateInput = document.getElementById('endDate');
     var incrementButton = document.getElementById('incrementEndDate');
 
-    // Function to increment the end date by 1 day
+   
     function incrementEndDate() {
-        // Increment the date by 1 day
+        
         startDate.setDate(startDate.getDate() + 1);
-        // Update the end date input field
+        
         endDateInput.value = startDate.toISOString().split('T')[0];
     }
 
-    // Add event listener to the increment button
+    
     incrementButton.addEventListener('click', incrementEndDate);
 </script>
