@@ -36,6 +36,16 @@
                                 <a class="nav-link" href="@Url.Action("MyReservations", "Reservation")">Moje Rezerwacje</a>
                             </li>
                         }
+                        @if (User.IsInRole("Admin"))
+                        {
+                            // Admin nie widzi tego linku
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Index", "Room")">Rooms</a>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav">
                         @if (HttpContextAccessor.HttpContext.Session.GetString("Username") != null)

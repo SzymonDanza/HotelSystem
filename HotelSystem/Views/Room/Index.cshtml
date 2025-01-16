@@ -1,0 +1,26 @@
+﻿@model List<RoomViewModel>
+
+@{
+    ViewData["Title"] = "Pokoje";
+}
+
+<h1>Pokoje</h1>
+
+<div class="row">
+    @foreach (var room in Model)
+    {
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <img src="https://via.placeholder.com/350x200" class="card-img-top" alt="Room Image">
+                <div class="card-body">
+                    <h5 class="card-title">@room.Name</h5>
+                    <p class="card-text">
+                        <strong>Połemność:</strong> @room.Capacity <br>
+                        <strong>Cena za noc:</strong> @room.PricePerNight zł
+                    </p>
+                   
+                </div>
+            </div>
+        </div>
+    }
+</div>
