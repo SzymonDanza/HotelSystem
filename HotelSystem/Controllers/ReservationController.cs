@@ -87,79 +87,69 @@ public class ReservationController : Controller
     }
 
 
+    
     [HttpPost]
-    public async Task<IActionResult> ConfirmReservation(int roomId, DateTime selectedDate)
+    public async Task<IActionResult> ConfirmReservation(int roomId, DateTime startDate, DateTime endDate)
     {
         if (!User.Identity.IsAuthenticated)
         {
-            return RedirectToAction("Login", "Account"); // Przekierowanie do strony logowania
+            return RedirectToAction("Login", "Account"); // Redirect to login page
         }
 
-        // Sprawdzenie, czy użytkownik jest zalogowany
         var userId = int.Parse(User.Identity.Name);
 
-        // Sprawdzamy, czy użytkownik istnieje
+        // Validate if the end date is before or equal to the start date
+        if (endDate < startDate)
+        {
+            ModelState.AddModelError("", "Zła data rezerwacji. Data zakończenia musi być późniejsza niż data rozpoczęcia.");
+            return View(); // Return the same view with the error
+        }
+
+        // Check if the user exists
         var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
         {
             ModelState.AddModelError("", "Użytkownik nie został znaleziony.");
-            return View(); // Możesz przekazać odpowiedni widok z komunikatem o błędzie
+            return View(); // Return the view with error
         }
 
-        // Sprawdzamy dostępność pokoju na wybraną datę
-        var roomAvailability = await DbContext.RoomAvailabilities
-                                               .FirstOrDefaultAsync(r => r.RoomId == roomId && r.Date == selectedDate);
+        // Check the availability of the room for the selected date range
+        var roomAvailabilities = await DbContext.RoomAvailabilities
+                                                .Where(r => r.RoomId == roomId && r.Date >= startDate && r.Date <= endDate)
+                                                .ToListAsync();
 
-        if (roomAvailability == null || !roomAvailability.Availability)
+        // If any day within the range is unavailable, display an error message
+        if (roomAvailabilities.Any(r => !r.Availability))
         {
-            ModelState.AddModelError("", "Pokój jest niedostępny w wybranym dniu.");
-
-            // Tworzymy model widoku, aby przekazać go do widoku
-            var availableRooms = DbContext.RoomAvailabilities
-                                          .Where(r => r.Date == selectedDate && r.Availability)
-                                          .Select(r => r.Room)
-                                          .ToList();
-
-            var viewModel = new ReservationViewModel
-            {
-                SelectedDate = selectedDate,
-                AvailableRooms = availableRooms
-            };
-
-            // Zwracamy widok z odpowiednim modelem
-            return View(viewModel);
+            ModelState.AddModelError("", "Pokój jest niedostępny w wybranym okresie.");
+            return View(); // Return the view with error
         }
 
-        // Sprawdzamy, czy pokój istnieje
-        var room = await DbContext.Rooms.FirstOrDefaultAsync(r => r.Id == roomId);
-        if (room == null)
-        {
-            ModelState.AddModelError("", "Pokój nie został znaleziony.");
-            return View(); // Możesz przekazać odpowiedni widok z komunikatem o błędzie
-        }
-
-        // Tworzymy rezerwację
+        // Create the reservation
         var reservation = new Reservation
         {
             RoomId = roomId,
-            StartDate = selectedDate,
-            EndDate = selectedDate.AddDays(1), // Zakładamy, że rezerwacja jest na 1 dzień
+            StartDate = startDate,
+            EndDate = endDate,
             UserId = userId,
-            User = user  // Przypisujemy użytkownika
+            User = user // Assign the user
         };
 
-        // Dodajemy rezerwację do bazy danych
+        // Add the reservation to the database
         DbContext.Reservations.Add(reservation);
 
-        // Zmieniamy dostępność pokoju na niedostępny
-        roomAvailability.Availability = false;
+        // Mark the room as unavailable for the selected dates
+        foreach (var roomAvailability in roomAvailabilities)
+        {
+            roomAvailability.Availability = false;
+        }
 
-        // Zapisujemy zmiany w bazie danych
         await DbContext.SaveChangesAsync();
 
-        // Przekierowanie do strony z potwierdzeniem rezerwacji
+        // Redirect to the reservation confirmation page
         return RedirectToAction("ReservationConfirmation", new { reservationId = reservation.Id });
     }
+
 
 
     private void UpdateRoomAvailabilityAfterReservation(int roomId, DateTime selectedDate)
@@ -205,6 +195,7 @@ public class ReservationController : Controller
         return View(reservations);
     }
 
+    
     [HttpPost]
     public async Task<IActionResult> DeleteReservation(int reservationId)
     {
@@ -229,20 +220,23 @@ public class ReservationController : Controller
         // Usuwamy rezerwację
         DbContext.Reservations.Remove(reservation);
 
-        // Oznaczamy pokój jako dostępny
-        var roomAvailability = await DbContext.RoomAvailabilities
-                                               .FirstOrDefaultAsync(r => r.RoomId == reservation.RoomId && r.Date == reservation.StartDate);
+        // Zwalniamy wszystkie dni od rozpoczęcia do zakończenia rezerwacji
+        var roomAvailabilities = await DbContext.RoomAvailabilities
+                                                 .Where(r => r.RoomId == reservation.RoomId && r.Date >= reservation.StartDate && r.Date <= reservation.EndDate)
+                                                 .ToListAsync();
 
-        if (roomAvailability != null)
+        foreach (var roomAvailability in roomAvailabilities)
         {
-            roomAvailability.Availability = true;
+            roomAvailability.Availability = true; // Ustawiamy dostępność na true (zwalniamy dzień)
         }
 
+        // Zapisujemy zmiany w bazie danych
         await DbContext.SaveChangesAsync();
 
         // Przekierowanie z powrotem do listy rezerwacji
         return RedirectToAction(nameof(MyReservations));
     }
+
 
 
 }
