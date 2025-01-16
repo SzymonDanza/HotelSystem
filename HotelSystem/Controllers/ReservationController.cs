@@ -49,8 +49,7 @@ public class ReservationController : Controller
             for (int day = 1; day <= daysInMonth; day++)
             {
                 var date = new DateTime(year, month + 1, day);
-                var roomAvailability = roomsAvailability.FirstOrDefault(r => r.Date == date);
-                var isAvailable = roomAvailability != null && roomAvailability.Availability;
+                var isAvailable = roomsAvailability.Any(r => r.Date == date && r.Availability);
 
                 monthDays.Add(new
                 {
