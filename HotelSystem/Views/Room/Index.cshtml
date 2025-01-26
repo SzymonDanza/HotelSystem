@@ -11,16 +11,35 @@
     {
         <div class="col-md-4">
             <div class="card mb-4 shadow-sm">
-               
                 <div class="card-body">
                     <h5 class="card-title">@room.Name</h5>
                     <p class="card-text">
                         <strong>Połemność:</strong> @room.Capacity <br>
                         <strong>Cena za noc:</strong> @room.PricePerNight zł
                     </p>
-                   
+                    <!-- Przycisk do przeliczenia ceny na USD -->
+                    <button class="btn btn-primary" onclick="getPriceInUsd(@room.PricePerNight)">Sprawdź cenę w dolarach</button>
+                    <div id="priceInUsd-@room.Name" class="mt-2"></div>
                 </div>
             </div>
         </div>
     }
 </div>
+
+<script>
+    async function getPriceInUsd(priceInPLN) {
+        try {
+            // Wysłanie zapytania do kontrolera, aby uzyskać cenę w USD
+            const response = await fetch(`/Room/GetPriceInUsd?priceInPLN=${priceInPLN}`);
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById(`priceInUsd-${priceInPLN}`).innerText = `Cena w USD: $${data.priceInUsd.toFixed(2)}`;
+            } else {
+                document.getElementById(`priceInUsd-${priceInPLN}`).innerText = 'Błąd przy pobieraniu ceny w dolarach.';
+            }
+        } catch (error) {
+            console.error('Błąd podczas pobierania ceny w dolarach:', error);
+        }
+    }
+</script>
