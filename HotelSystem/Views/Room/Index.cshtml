@@ -21,8 +21,17 @@
     }
 </div>
 
+<!-- Miejsce na flagę i wybór flagi -->
+<div id="flagContainer" style="margin-top: 30px; text-align: center;">
+    <img id="selectedFlag" src="https://flagcdn.com/w320/pl.png" alt="Flaga" style="cursor: pointer; width: 50px; height: auto;" onclick="toggleFlagList()" />
+    <div id="flagList" style="display: none; margin-top: 10px;">
+        <!-- Lista flag będzie się ładować dynamicznie -->
+    </div>
+</div>
+
 <script>
-    function getPriceInUsd(priceInPLN) {
+
+     function getPriceInUsd(priceInPLN) {
         console.log("Cena w PLN:", priceInPLN);
 
         // Wysyłanie zapytania AJAX do kontrolera
@@ -44,6 +53,58 @@
                 alert("Wystąpił błąd podczas pobierania ceny.");
             });
     }
+
+    const flagApiUrl = "https://flagcdn.com/en/codes.json"; // URL do API flag
+
+    // Funkcja do załadowania wszystkich flag
+    function loadFlags() {
+        fetch(flagApiUrl)
+            .then(response => response.json())
+            .then(data => {
+                const flagList = document.getElementById('flagList');
+                flagList.innerHTML = ''; // Wyczyść aktualną listę
+
+                Object.keys(data).forEach(countryCode => {
+                    const flagUrl = `https://flagcdn.com/w320/${countryCode}.png`;
+
+                    const flagItem = document.createElement('img');
+                    flagItem.src = flagUrl;
+                    flagItem.alt = countryCode;
+                    flagItem.style.cursor = 'pointer';
+                    flagItem.style.width = '50px';
+                    flagItem.style.height = 'auto';
+                    flagItem.onclick = () => changeFlag(countryCode);
+
+                    flagList.appendChild(flagItem);
+                });
+            });
+    }
+
+    // Funkcja do zmiany flagi
+    function changeFlag(countryCode) {
+        const flagUrl = `https://flagcdn.com/w320/${countryCode}.png`;
+        const selectedFlag = document.getElementById('selectedFlag');
+        selectedFlag.src = flagUrl;
+        selectedFlag.alt = countryCode;
+
+        const flagList = document.getElementById('flagList');
+        flagList.style.display = 'none'; // Ukryj listę po wybraniu flagi
+    }
+
+    // Funkcja do rozwijania i zwijania listy flag
+    function toggleFlagList() {
+        const flagList = document.getElementById('flagList');
+        if (flagList.style.display === 'none' || flagList.style.display === '') {
+            flagList.style.display = 'flex'; // Wyświetl listę w rzędach
+            flagList.style.flexWrap = 'wrap'; // Flagi w rzędach
+            flagList.style.justifyContent = 'center'; // Wyśrodkowanie flag
+            flagList.style.gap = '10px'; // Odstępy między flagami
+            loadFlags(); // Ładowanie flag
+        } else {
+            flagList.style.display = 'none';
+        }
+    }
+
 </script>
 
 <style>
@@ -81,10 +142,10 @@
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .room-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    }
+        .room-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
 
     .room-name {
         font-size: 1.2em;
@@ -104,15 +165,21 @@
         transition: background-color 0.3s;
     }
 
-    .room-card button:hover {
-        background-color: #0056b3;
+        .room-card button:hover {
+            background-color: #0056b3;
+        }
+
+    /* Styl dla kontenera flagi */
+    #flagContainer {
+        margin-top: 30px;
+        text-align: center;
     }
 
-    /* Miejsce na wynik przeliczenia ceny */
-    #priceInUsdResult {
-        margin-top: 20px;
-        font-size: 1.5em;
-        font-weight: bold;
-        color: #333;
+    #flagList {
+        margin-top: 10px;
+        display: none;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
     }
 </style>

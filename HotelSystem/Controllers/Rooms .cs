@@ -45,6 +45,13 @@ public class RoomController : Controller
             var priceInUsd = priceInPLN * rates.Rates["USD"];
             return Json(new { success = true, priceInUsd });
         }
+        else
+        {
+            // Obliczenie ceny w USD
+            var priceInUsd = priceInPLN * rates.Rates["USD"];
+            return Json(new { success = true, priceInUsd });
+        }
+
 
         return Json(new { success = false, message = "Nie znaleziono kursu USD." });
     }
