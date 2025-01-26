@@ -27,19 +27,23 @@
 </div>
 
 <script>
-    async function getPriceInUsd(priceInPLN) {
-        try {
-            // Wysłanie zapytania do kontrolera, aby uzyskać cenę w USD
-            const response = await fetch(`/Room/GetPriceInUsd?priceInPLN=${priceInPLN}`);
-            const data = await response.json();
-
-            if (data.success) {
-                document.getElementById(`priceInUsd-${priceInPLN}`).innerText = `Cena w USD: $${data.priceInUsd.toFixed(2)}`;
-            } else {
-                document.getElementById(`priceInUsd-${priceInPLN}`).innerText = 'Błąd przy pobieraniu ceny w dolarach.';
-            }
-        } catch (error) {
-            console.error('Błąd podczas pobierania ceny w dolarach:', error);
-        }
+    function getPriceInUsd(priceInPLN) {
+        // Wysyłanie zapytania AJAX do kontrolera
+        fetch(`/Room/GetPriceInUsd?priceInPLN=${priceInPLN}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Jeśli sukces, wyświetl przeliczoną cenę
+                    alert(`Cena w USD: ${data.priceInUsd}`);
+                } else {
+                    // Jeśli błąd, wyświetl komunikat
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                // Obsługa błędów
+                console.error("Błąd podczas pobierania ceny w dolarach: ", error);
+                alert("Wystąpił błąd podczas pobierania ceny.");
+            });
     }
 </script>

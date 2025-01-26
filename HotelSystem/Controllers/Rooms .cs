@@ -1,6 +1,8 @@
 ﻿using HotelSystem.Data;
-using HotelSystem.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 public class RoomController : Controller
 {
@@ -32,16 +34,31 @@ public class RoomController : Controller
     [HttpGet]
     public async Task<IActionResult> GetPriceInUsd(decimal priceInPLN)
     {
-        // Pobranie kursów walut z API
-        var rates = await _currencyService.GetExchangeRatesAsync("USD");
-
-        if (rates != null && rates.Rates.ContainsKey("USD"))
+        try
         {
-            // Obliczenie ceny w USD
-            var priceInUsd = priceInPLN / rates.Rates["USD"];
-            return Json(new { success = true, priceInUsd });
-        }
+            // Pobranie kursów walut z API
+            var rates = await _currencyService.GetExchangeRatesAsync("USD");
 
-        return Json(new { success = false });
+            // Debugowanie: wypisanie odpowiedzi API
+            Console.WriteLine($"Response from API: {rates}");
+
+            if (rates != null && rates.Rates.ContainsKey("USD"))
+            {
+                // Obliczenie ceny w USD
+                var priceInUsd = priceInPLN / rates.Rates["USD"];
+                return Json(new { success = true, priceInUsd });
+            }
+            else
+            {
+                // W przypadku braku kursu USD
+                return Json(new { success = false, message = "Nie znaleziono kursu USD w odpowiedzi API." });
+            }
+        }
+        catch (Exception ex)
+        {
+            // Obsługa wyjątków: logowanie błędu w przypadku problemu z API
+            Console.WriteLine($"Błąd podczas pobierania kursów walut: {ex.Message}");
+            return Json(new { success = false, message = "Wystąpił błąd podczas pobierania kursu." });
+        }
     }
 }

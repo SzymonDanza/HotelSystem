@@ -1,53 +1,40 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using Newtonsoft.Json;
 
-namespace HotelSystem.Services
+public class CurrencyService
 {
-    public class CurrencyService
+    private readonly HttpClient _httpClient;
+
+    public CurrencyService(HttpClient httpClient)
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _apiKey = "f5ca8c7c2531e5b9147f67dc";  // Twój klucz API
-
-        // Konstruktor
-        public CurrencyService(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
-
-        // Pobieranie kursów walut
-        public async Task<CurrencyRates> GetExchangeRatesAsync(string baseCurrency)
-        {
-            try
-            {
-                var url = $"https://v6.exchangerate-api.com/v6/{_apiKey}/latest/{baseCurrency}";
-
-                var response = await _httpClient.GetAsync(url);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
-
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                // Deserializuj odpowiedź do nowego modelu
-                var rates = JsonConvert.DeserializeObject<CurrencyRates>(responseContent);
-
-                return rates;
-            }
-            catch
-            {
-                return null;
-            }
-        }
+        _httpClient = httpClient;
     }
 
-    // Model odpowiedzi API
-    public class CurrencyRates
+    public async Task<ExchangeRates> GetExchangeRatesAsync(string baseCurrency)
     {
-        public string Base { get; set; }
-        public Dictionary<string, decimal> Rates { get; set; }
+        try
+        {
+            // Przykład URL API (zmień na odpowiedni)
+            var url = $"https://api.exchangerate-api.com/v4/latest/{baseCurrency}";
+            var response = await _httpClient.GetStringAsync(url);
+
+            // Zwrócenie deserializowanych danych z API
+            var rates = JsonConvert.DeserializeObject<ExchangeRates>(response);
+            return rates;
+        }
+        catch (Exception ex)
+        {
+            // Logowanie błędu, jeżeli API nie jest dostępne
+            Console.WriteLine($"Błąd podczas pobierania kursów walut: {ex.Message}");
+            return null;
+        }
     }
+}
+
+public class ExchangeRates
+{
+    public string Base { get; set; }
+    public Dictionary<string, decimal> Rates { get; set; }
 }
