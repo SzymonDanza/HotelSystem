@@ -16,17 +16,17 @@ public class CurrencyService
     {
         try
         {
-            // Przykład URL API (zmień na odpowiedni)
+           
             var url = $"https://api.exchangerate-api.com/v4/latest/{baseCurrency}";
             var response = await _httpClient.GetStringAsync(url);
 
-            // Zwrócenie deserializowanych danych z API
+            
             var rates = JsonConvert.DeserializeObject<ExchangeRates>(response);
             return rates;
         }
         catch (Exception ex)
         {
-            // Logowanie błędu, jeżeli API nie jest dostępne
+            
             Console.WriteLine($"Błąd podczas pobierania kursów walut: {ex.Message}");
             return null;
         }

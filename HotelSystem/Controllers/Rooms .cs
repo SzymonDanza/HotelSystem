@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using HotelSystem.Models;  // Dodajemy przestrzeń nazw dla modelu Room
+using HotelSystem.Models;  
 using System.Threading.Tasks;
 
 public class RoomController : Controller
@@ -17,7 +17,7 @@ public class RoomController : Controller
         _currencyService = currencyService;
     }
 
-    // Metoda dla wyświetlenia pokoi
+   
     public IActionResult Index()
     {
         var rooms = _dbContext.Rooms
@@ -32,27 +32,26 @@ public class RoomController : Controller
         return View(rooms);
     }
 
-    // Metoda przeliczająca cenę na USD
+    
+    
     [HttpGet]
-    public async Task<IActionResult> GetPriceInUsd(decimal priceInPLN)
-    {
-        // Pobranie kursów walut z API
+    public async Task<IActionResult> GetPriceInUsd(decimal priceInPLN, string currency)
+    {   
+        if (string.IsNullOrEmpty(currency))
+        {
+            return Json(new { success = false, message = "Nie podano waluty." });
+        }
+
+       
         var rates = await _currencyService.GetExchangeRatesAsync("PLN");
 
-        if (rates != null && rates.Rates.ContainsKey("USD"))
+        if (rates != null && rates.Rates.ContainsKey(currency))
         {
-            // Obliczenie ceny w USD
-            var priceInUsd = priceInPLN * rates.Rates["USD"];
-            return Json(new { success = true, priceInUsd });
-        }
-        else
-        {
-            // Obliczenie ceny w USD
-            var priceInUsd = priceInPLN * rates.Rates["USD"];
-            return Json(new { success = true, priceInUsd });
+            
+            var convertedPrice = priceInPLN * rates.Rates[currency];
+            return Json(new { success = true, convertedPrice });
         }
 
-
-        return Json(new { success = false, message = "Nie znaleziono kursu USD." });
+        return Json(new { success = false, message = $"Nie znaleziono kursu dla waluty {currency}." });
     }
 }

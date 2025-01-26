@@ -4,7 +4,7 @@
     ViewData["Title"] = "Pokoje";
 }
 
-<!-- Miejsce na wynik przeliczonej ceny na USD -->
+
 <div id="priceInUsdResult" style="text-align: center; font-size: 1.5em; margin-bottom: 30px;"></div>
 
 <div class="rooms-container">
@@ -15,54 +15,81 @@
             <p>Pojemność: @room.Capacity</p>
             <p>Cena za noc (PLN): @room.PricePerNight</p>
 
-            <!-- Przycisk do przeliczenia ceny na USD -->
-            <button onclick="getPriceInUsd(@room.PricePerNight)">Przelicz na USD</button>
+            
+            <button onclick="getPriceInUsd(@room.PricePerNight)">Przelicz</button>
         </div>
     }
 </div>
 
-<!-- Miejsce na flagę i wybór flagi -->
+
 <div id="flagContainer" style="margin-top: 30px; text-align: center;">
     <img id="selectedFlag" src="https://flagcdn.com/w320/pl.png" alt="Flaga" style="cursor: pointer; width: 50px; height: auto;" onclick="toggleFlagList()" />
     <div id="flagList" style="display: none; margin-top: 10px;">
-        <!-- Lista flag będzie się ładować dynamicznie -->
+        
     </div>
 </div>
 
 <script>
 
-     function getPriceInUsd(priceInPLN) {
-        console.log("Cena w PLN:", priceInPLN);
+             let selectedCurrency = "USD"; 
 
-        // Wysyłanie zapytania AJAX do kontrolera
-        fetch(`/Room/GetPriceInUsd?priceInPLN=${priceInPLN}`)
+    function getPriceInUsd(priceInPLN) {
+        console.log("Cena w PLN:", priceInPLN);
+        console.log("Wybrana waluta:", selectedCurrency);
+
+        
+        fetch(`/Room/GetPriceInUsd?priceInPLN=${priceInPLN}&currency=${selectedCurrency}`)
             .then(response => response.json())
             .then(data => {
-                const resultElement = document.getElementById('priceInUsdResult'); // Pobranie jednego miejsca na wynik
+                const resultElement = document.getElementById('priceInUsdResult');
 
                 if (data.success) {
-                    console.log("Cena w USD:", data.priceInUsd);
-                    resultElement.textContent = `Cena w USD: ${data.priceInUsd.toFixed(2)}`; // Zaktualizowanie tekstu w konkretnym elemencie
+                    console.log(`Cena w ${selectedCurrency}:`, data.convertedPrice);
+                    resultElement.textContent = `Cena w ${selectedCurrency}: ${data.convertedPrice.toFixed(2)}`;
                 } else {
                     console.log("Błąd:", data.message);
-                    resultElement.textContent = `Błąd: ${data.message}`; // Zaktualizowanie tekstu o błędzie
+                    resultElement.textContent = `Błąd: ${data.message}`;
                 }
             })
             .catch(error => {
                 console.error("Błąd:", error);
-                alert("Wystąpił błąd podczas pobierania ceny.");
+                alert("Wystąpił błąd podczas przeliczania ceny.");
             });
     }
 
-    const flagApiUrl = "https://flagcdn.com/en/codes.json"; // URL do API flag
+    function changeFlag(countryCode) {
+        const flagUrl = `https://flagcdn.com/w320/${countryCode}.png`;
+        const selectedFlag = document.getElementById('selectedFlag');
+        selectedFlag.src = flagUrl;
+        selectedFlag.alt = countryCode;
 
-    // Funkcja do załadowania wszystkich flag
+        selectedCurrency = getCurrencyByCountry(countryCode); 
+        console.log(`Zmieniono walutę na: ${selectedCurrency}`);
+
+        const flagList = document.getElementById('flagList');
+        flagList.style.display = 'none'; 
+    }
+
+    function toggleFlagList() {
+        const flagList = document.getElementById('flagList');
+        if (flagList.style.display === 'none' || flagList.style.display === '') {
+            flagList.style.display = 'flex'; 
+            flagList.style.flexWrap = 'wrap'; 
+            flagList.style.justifyContent = 'center';
+            flagList.style.gap = '10px'; 
+            loadFlags(); 
+        } else {
+            flagList.style.display = 'none'; 
+        }
+    }
+
     function loadFlags() {
+        const flagApiUrl = "https://flagcdn.com/en/codes.json"; 
         fetch(flagApiUrl)
             .then(response => response.json())
             .then(data => {
                 const flagList = document.getElementById('flagList');
-                flagList.innerHTML = ''; // Wyczyść aktualną listę
+                flagList.innerHTML = ''; 
 
                 Object.keys(data).forEach(countryCode => {
                     const flagUrl = `https://flagcdn.com/w320/${countryCode}.png`;
@@ -77,38 +104,28 @@
 
                     flagList.appendChild(flagItem);
                 });
+            })
+            .catch(error => {
+                console.error("Błąd podczas ładowania flag:", error);
             });
     }
 
-    // Funkcja do zmiany flagi
-    function changeFlag(countryCode) {
-        const flagUrl = `https://flagcdn.com/w320/${countryCode}.png`;
-        const selectedFlag = document.getElementById('selectedFlag');
-        selectedFlag.src = flagUrl;
-        selectedFlag.alt = countryCode;
+    function getCurrencyByCountry(countryCode) {
+        const currencies = {
+            "pl": "PLN",
+            "us": "USD",
+            "de": "EUR",
+            "gb": "GBP",
+            
+        };
 
-        const flagList = document.getElementById('flagList');
-        flagList.style.display = 'none'; // Ukryj listę po wybraniu flagi
-    }
-
-    // Funkcja do rozwijania i zwijania listy flag
-    function toggleFlagList() {
-        const flagList = document.getElementById('flagList');
-        if (flagList.style.display === 'none' || flagList.style.display === '') {
-            flagList.style.display = 'flex'; // Wyświetl listę w rzędach
-            flagList.style.flexWrap = 'wrap'; // Flagi w rzędach
-            flagList.style.justifyContent = 'center'; // Wyśrodkowanie flag
-            flagList.style.gap = '10px'; // Odstępy między flagami
-            loadFlags(); // Ładowanie flag
-        } else {
-            flagList.style.display = 'none';
-        }
+        return currencies[countryCode] || "PLN"; 
     }
 
 </script>
 
 <style>
-    /* Style dla całej strony */
+    
     body {
         font-family: Arial, sans-serif;
         margin: 0;
@@ -121,7 +138,7 @@
         background-color: #f4f4f4;
     }
 
-    /* Kontener dla pokoi */
+    
     .rooms-container {
         display: flex;
         flex-wrap: wrap;
@@ -131,7 +148,7 @@
         width: 100%;
     }
 
-    /* Karta pokoju */
+    
     .room-card {
         width: 250px;
         background-color: white;
@@ -153,7 +170,7 @@
         margin-bottom: 10px;
     }
 
-    /* Styl dla przycisku */
+    
     .room-card button {
         background-color: #007bff;
         color: white;
@@ -169,7 +186,7 @@
             background-color: #0056b3;
         }
 
-    /* Styl dla kontenera flagi */
+    
     #flagContainer {
         margin-top: 30px;
         text-align: center;
