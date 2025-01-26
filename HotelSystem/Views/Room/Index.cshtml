@@ -4,45 +4,45 @@
     ViewData["Title"] = "Pokoje";
 }
 
-<h1>Pokoje</h1>
+@foreach (var room in Model)
+{
+    <div>
+        <h3>@room.Name</h3>
+        <p>Pojemność: @room.Capacity</p>
+        <p>Cena za noc (PLN): @room.PricePerNight</p>
 
-<div class="row">
-    @foreach (var room in Model)
-    {
-        <div class="col-md-4">
-            <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">@room.Name</h5>
-                    <p class="card-text">
-                        <strong>Połemność:</strong> @room.Capacity <br>
-                        <strong>Cena za noc:</strong> @room.PricePerNight zł
-                    </p>
-                    <!-- Przycisk do przeliczenia ceny na USD -->
-                    <button class="btn btn-primary" onclick="getPriceInUsd(@room.PricePerNight)">Sprawdź cenę w dolarach</button>
-                    <div id="priceInUsd-@room.Name" class="mt-2"></div>
-                </div>
-            </div>
-        </div>
-    }
-</div>
+        <!-- Przycisk do przeliczenia ceny na USD -->
+        <button onclick="getPriceInUsd(@room.PricePerNight)">Przelicz na USD</button>
+
+        <!-- Miejsce na wynik -->
+        <p class="result"></p> <!-- Zaktualizujemy wszystkie wyniki w tym samym elemencie -->
+    </div>
+}
 
 <script>
     function getPriceInUsd(priceInPLN) {
+        console.log("Cena w PLN:", priceInPLN);
+
         // Wysyłanie zapytania AJAX do kontrolera
         fetch(`/Room/GetPriceInUsd?priceInPLN=${priceInPLN}`)
             .then(response => response.json())
             .then(data => {
+                const resultElements = document.querySelectorAll('.result'); // Pobranie wszystkich wyników
+
                 if (data.success) {
-                    // Jeśli sukces, wyświetl przeliczoną cenę
-                    alert(`Cena w USD: ${data.priceInUsd}`);
+                    console.log("Cena w USD:", data.priceInUsd);
+                    resultElements.forEach(element => {
+                        element.textContent = `Cena w USD: ${data.priceInUsd}`; // Zaktualizowanie tekstu w elemencie
+                    });
                 } else {
-                    // Jeśli błąd, wyświetl komunikat
-                    alert(data.message);
+                    console.log("Błąd:", data.message);
+                    resultElements.forEach(element => {
+                        element.textContent = `Błąd: ${data.message}`; // Zaktualizowanie tekstu o błędzie
+                    });
                 }
             })
             .catch(error => {
-                // Obsługa błędów
-                console.error("Błąd podczas pobierania ceny w dolarach: ", error);
+                console.error("Błąd:", error);
                 alert("Wystąpił błąd podczas pobierania ceny.");
             });
     }
