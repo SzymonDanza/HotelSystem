@@ -4,20 +4,22 @@
     ViewData["Title"] = "Pokoje";
 }
 
-@foreach (var room in Model)
-{
-    <div>
-        <h3>@room.Name</h3>
-        <p>Pojemność: @room.Capacity</p>
-        <p>Cena za noc (PLN): @room.PricePerNight</p>
+<!-- Miejsce na wynik przeliczonej ceny na USD -->
+<div id="priceInUsdResult" style="text-align: center; font-size: 1.5em; margin-bottom: 30px;"></div>
 
-        <!-- Przycisk do przeliczenia ceny na USD -->
-        <button onclick="getPriceInUsd(@room.PricePerNight)">Przelicz na USD</button>
+<div class="rooms-container">
+    @foreach (var room in Model)
+    {
+        <div class="room-card">
+            <h3 class="room-name">@room.Name</h3>
+            <p>Pojemność: @room.Capacity</p>
+            <p>Cena za noc (PLN): @room.PricePerNight</p>
 
-        <!-- Miejsce na wynik -->
-        <p class="result"></p> <!-- Zaktualizujemy wszystkie wyniki w tym samym elemencie -->
-    </div>
-}
+            <!-- Przycisk do przeliczenia ceny na USD -->
+            <button onclick="getPriceInUsd(@room.PricePerNight)">Przelicz na USD</button>
+        </div>
+    }
+</div>
 
 <script>
     function getPriceInUsd(priceInPLN) {
@@ -27,18 +29,14 @@
         fetch(`/Room/GetPriceInUsd?priceInPLN=${priceInPLN}`)
             .then(response => response.json())
             .then(data => {
-                const resultElements = document.querySelectorAll('.result'); // Pobranie wszystkich wyników
+                const resultElement = document.getElementById('priceInUsdResult'); // Pobranie jednego miejsca na wynik
 
                 if (data.success) {
                     console.log("Cena w USD:", data.priceInUsd);
-                    resultElements.forEach(element => {
-                        element.textContent = `Cena w USD: ${data.priceInUsd}`; // Zaktualizowanie tekstu w elemencie
-                    });
+                    resultElement.textContent = `Cena w USD: ${data.priceInUsd.toFixed(2)}`; // Zaktualizowanie tekstu w konkretnym elemencie
                 } else {
                     console.log("Błąd:", data.message);
-                    resultElements.forEach(element => {
-                        element.textContent = `Błąd: ${data.message}`; // Zaktualizowanie tekstu o błędzie
-                    });
+                    resultElement.textContent = `Błąd: ${data.message}`; // Zaktualizowanie tekstu o błędzie
                 }
             })
             .catch(error => {
@@ -47,3 +45,74 @@
             });
     }
 </script>
+
+<style>
+    /* Style dla całej strony */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+        background-color: #f4f4f4;
+    }
+
+    /* Kontener dla pokoi */
+    .rooms-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px;
+        width: 100%;
+    }
+
+    /* Karta pokoju */
+    .room-card {
+        width: 250px;
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .room-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .room-name {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    /* Styl dla przycisku */
+    .room-card button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.3s;
+    }
+
+    .room-card button:hover {
+        background-color: #0056b3;
+    }
+
+    /* Miejsce na wynik przeliczenia ceny */
+    #priceInUsdResult {
+        margin-top: 20px;
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+    }
+</style>
